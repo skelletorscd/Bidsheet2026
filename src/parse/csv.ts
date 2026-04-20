@@ -36,12 +36,21 @@ function classifyPayType(legs: Leg[]): Bid["payType"] {
   return "unknown";
 }
 
+function extractTakenBy(colH: string): string | null {
+  const t = colH.trim();
+  if (!t) return null;
+  // Sleeper tab uses col H as "Drivers" with A./B./C. slot markers.
+  if (/^[A-Z]\.?$/.test(t)) return null;
+  return t;
+}
+
 function buildBid(
   bidNum: number,
   jobNum: string,
   startTime24: string,
   qualifications: string,
   legs: Leg[],
+  takenBy: string | null,
 ): Bid {
   let totalHours = 0;
   let totalMiles = 0;
@@ -72,8 +81,8 @@ function buildBid(
     hasWeekend,
     destinations: Array.from(dest),
     estimatedWeeklyPay: 0,
-    status: "available",
-    takenBy: null,
+    status: takenBy ? "taken" : "available",
+    takenBy,
   };
 }
 
@@ -157,6 +166,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
         startTime24: string;
         qualifications: string;
         legs: Leg[];
+        takenBy: string | null;
       }
     | null = null;
 
@@ -169,6 +179,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
           cur.startTime24,
           cur.qualifications,
           cur.legs,
+          cur.takenBy,
         ),
       );
       cur = null;
@@ -189,6 +200,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
     const colE = (row[4] ?? "").trim();
     const colF = (row[5] ?? "").trim();
     const colG = (row[6] ?? "").trim();
+    const colH = (row[7] ?? "").trim();
 
     const isNewBid = /^\d+$/.test(colA) && colC.length > 0;
 
@@ -201,6 +213,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
         startTime24: time,
         qualifications: colD,
         legs: [],
+        takenBy: extractTakenBy(colH),
       };
       if (colE || colF || colG) {
         cur.legs.push(makeLeg(colE, colF, colG, null, null, defaultUnit));
@@ -209,6 +222,11 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
     }
 
     if (!cur) continue;
+
+    if (!cur.takenBy) {
+      const legTakenBy = extractTakenBy(colH);
+      if (legTakenBy) cur.takenBy = legTakenBy;
+    }
 
     const hasDays = colE.length > 0;
     const hasRoute = colF.length > 0;

@@ -73,3 +73,38 @@ describe("parseAnnualBidCsv", () => {
     expect(layover).toBeDefined();
   });
 });
+
+describe("parseAnnualBidCsv — taken-by column", () => {
+  const LIVE_SAMPLE = `2026 Toledo Annual Feeder Bid Notice,,,,,,,
+"Notice",,,,,,,
+,Start Time,Job #,Job Qualifications,Job Days,Job Description,Schedule,
+1,0:15,WP01,LCV,Mon,WPOIN-TOLOH,10.4,
+,,,,Tues,WPOIN-TOLOH-NBLOH-TOLOH,12.88,
+,,,,,,,
+2,1:00,TD15,Mileage Pay (D),Tue,DUBPA-TOLOH,554 Miles,
+,,,,Wed,DUBPA-NBLOH-TOLOH,605 Miles,Bill Seeger
+,,,,Thurs,DUBPA-TOLOH,554 Miles,
+,,,,,,,
+4,1:00,TD10,Mileage Pay (D),Tue - Sat,MIDOH-DUXPA-TOLOH,558 Miles,Jack Kreiner
+,,,,,,,
+`;
+  const parsed = parseAnnualBidCsv(LIVE_SAMPLE);
+
+  it("leaves untaken bids as available", () => {
+    const wp01 = parsed.bids.find((b) => b.jobNum === "WP01")!;
+    expect(wp01.status).toBe("available");
+    expect(wp01.takenBy).toBeNull();
+  });
+
+  it("marks bid as taken when name appears on a continuation row", () => {
+    const td15 = parsed.bids.find((b) => b.jobNum === "TD15")!;
+    expect(td15.status).toBe("taken");
+    expect(td15.takenBy).toBe("Bill Seeger");
+  });
+
+  it("marks bid as taken when name appears on the primary row", () => {
+    const td10 = parsed.bids.find((b) => b.jobNum === "TD10")!;
+    expect(td10.status).toBe("taken");
+    expect(td10.takenBy).toBe("Jack Kreiner");
+  });
+});
