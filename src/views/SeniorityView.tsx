@@ -11,6 +11,7 @@ import {
   formatYears,
   formatCallWindow,
 } from "../util/people";
+import { useTakenBids } from "../data/useTakenBids";
 
 type Props = {
   tab: TabSource;
@@ -66,6 +67,8 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
     [bidTimesState.csv],
   );
 
+  const takenBids = useTakenBids(settings);
+
   const callTimeByRank = useMemo(() => {
     const map = new Map<number, string>();
     let lastWindow: string | null = null;
@@ -89,7 +92,9 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
     );
   }, [seniority, search]);
 
-  const pickedCount = seniority.filter((r) => r.currentBid).length;
+  const pickedCount = seniority.filter(
+    (r) => r.currentBid || takenBids.lookup(r.name),
+  ).length;
 
   if (gid == null) return notConfigured(tab.label);
   if (csvState.error && !csvState.csv) {
@@ -147,7 +152,9 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
                 const callWindow = formatCallWindow(
                   callTimeByRank.get(row.rank) ?? null,
                 );
-                const hasPicked = !!row.currentBid;
+                const takenMatch = takenBids.lookup(row.name);
+                const pickedBid = row.currentBid ?? takenMatch?.jobNum ?? null;
+                const hasPicked = !!pickedBid;
                 const seniorityRaw = row.ptDate ?? row.ftDate;
                 const seniorityDate = parseDateMDY(seniorityRaw);
                 const yrs = yearsSince(seniorityDate);
@@ -186,7 +193,16 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
                     <td className="px-3 py-2">
                       {hasPicked ? (
                         <span className="font-mono font-semibold text-amber-300 tabular">
-                          {row.currentBid}
+                          {pickedBid}
+                          {takenMatch?.hub && takenMatch.hub !== "TOL" && (
+                            <span className="ml-1.5 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                              {takenMatch.hub === "NBL"
+                                ? "NBL"
+                                : takenMatch.hub === "ALL"
+                                  ? "Sleep"
+                                  : ""}
+                            </span>
+                          )}
                         </span>
                       ) : (
                         <span className="text-slate-600 text-[12px]">

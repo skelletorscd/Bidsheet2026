@@ -6,6 +6,7 @@ import { parseBidTimesCsv, BidTimesRow } from "../parse/people";
 import { PasteFallback } from "../components/PasteFallback";
 import { AlertCircle, Calendar, Inbox } from "lucide-react";
 import { formatCallWindow } from "../util/people";
+import { useTakenBids } from "../data/useTakenBids";
 
 type Props = {
   tab: TabSource;
@@ -45,6 +46,8 @@ export function BidTimesView({ tab, settings, onStatus }: Props) {
     () => (csvState.csv ? parseBidTimesCsv(csvState.csv) : []),
     [csvState.csv],
   );
+
+  const takenBids = useTakenBids(settings);
 
   const grouped = useMemo(() => groupByWindow(rows), [rows]);
 
@@ -93,29 +96,45 @@ export function BidTimesView({ tab, settings, onStatus }: Props) {
                 </span>
               </header>
               <ul className="divide-y divide-border-subtle">
-                {g.rows.map((r) => (
-                  <li
-                    key={r.rank}
-                    className="px-4 py-2 flex items-center gap-3 hover:bg-bg-hover"
-                  >
-                    <span className="tabular w-10 text-right text-amber-300 font-semibold">
-                      {r.rank}
-                    </span>
-                    <span className="flex-1 text-slate-100 font-medium">
-                      {r.name}
-                    </span>
-                    {r.vacationWeeks && (
-                      <span className="text-[11px] text-slate-500 tabular">
-                        {r.vacationWeeks} wks vac
+                {g.rows.map((r) => {
+                  const picked = takenBids.lookup(r.name);
+                  return (
+                    <li
+                      key={r.rank}
+                      className={`px-4 py-2 flex items-center gap-3 hover:bg-bg-hover ${picked ? "opacity-80" : ""}`}
+                    >
+                      <span className="tabular w-10 text-right text-amber-300 font-semibold">
+                        {r.rank}
                       </span>
-                    )}
-                    {r.ftDate && (
-                      <span className="text-[11px] text-slate-500 tabular hidden sm:inline">
-                        FT {r.ftDate}
+                      <span className="flex-1 text-slate-100 font-medium">
+                        {r.name}
                       </span>
-                    )}
-                  </li>
-                ))}
+                      {picked ? (
+                        <span className="font-mono text-[12px] font-semibold text-amber-300 tabular">
+                          {picked.jobNum}
+                          {picked.hub && picked.hub !== "TOL" && (
+                            <span className="ml-1 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                              {picked.hub === "NBL"
+                                ? "NBL"
+                                : picked.hub === "ALL"
+                                  ? "Sleep"
+                                  : ""}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-slate-600">
+                          pending
+                        </span>
+                      )}
+                      {r.vacationWeeks && (
+                        <span className="text-[11px] text-slate-500 tabular hidden sm:inline">
+                          {r.vacationWeeks} wks vac
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           ))}
