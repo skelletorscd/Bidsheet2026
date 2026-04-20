@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Theme variables ───────────────────────────────────────────── */
+/* Dark is the default / no-theme-selected state. */
+:root {
+  color-scheme: dark;
+
+  --bg-base: 10 14 22;
+  --bg-panel: 15 20 29;
+  --bg-raised: 21 27 38;
+  --bg-hover: 28 35 48;
+
+  --border: 40 49 66;
+  --border-subtle: 31 39 51;
+}
+
+html.light {
+  color-scheme: light;
+
+  --bg-base: 255 255 255;
+  --bg-panel: 248 250 252;
+  --bg-raised: 241 245 249;
+  --bg-hover: 226 232 240;
+
+  --border: 203 213 225;
+  --border-subtle: 226 232 240;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: rgb(var(--bg-base));
+}
+
+body {
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  color: rgb(241 245 249); /* slate-100 */
+}
+html.light body {
+  color: rgb(15 23 42); /* slate-900 */
+}
+
+/* ─── Slate colour remap for light mode ─────────────────────────── */
+/* Keeps every existing `text-slate-*` utility meaningful in both     */
+/* themes without touching each component.                           */
+html.light .text-slate-50  { color: rgb(15 23 42); }
+html.light .text-slate-100 { color: rgb(15 23 42); }
+html.light .text-slate-200 { color: rgb(30 41 59); }
+html.light .text-slate-300 { color: rgb(51 65 85); }
+html.light .text-slate-400 { color: rgb(71 85 105); }
+html.light .text-slate-500 { color: rgb(100 116 139); }
+html.light .text-slate-600 { color: rgb(148 163 184); }
+
+html.light .bg-slate-700\/40 { background-color: rgb(226 232 240 / 0.6); }
+html.light .bg-slate-800\/60 { background-color: rgb(226 232 240 / 0.8); }
+html.light .border-slate-600 { border-color: rgb(203 213 225); }
+
+/* Accent tints look washed out on light; bump opacity. */
+html.light .bg-amber-500\/10  { background-color: rgb(245 158 11 / 0.12); }
+html.light .bg-amber-500\/15  { background-color: rgb(245 158 11 / 0.15); }
+html.light .bg-emerald-500\/15 { background-color: rgb(16 185 129 / 0.15); }
+html.light .bg-purple-500\/15  { background-color: rgb(168 85 247 / 0.15); }
+html.light .bg-rose-500\/10    { background-color: rgb(244 63 94 / 0.12); }
+html.light .bg-sky-500\/15     { background-color: rgb(14 165 233 / 0.15); }
+
+html.light .text-amber-200 { color: rgb(180 83 9); }
+html.light .text-amber-300 { color: rgb(180 83 9); }
+html.light .text-emerald-300 { color: rgb(5 150 105); }
+html.light .text-purple-300 { color: rgb(126 34 206); }
+html.light .text-rose-300 { color: rgb(190 18 60); }
+html.light .text-sky-300 { color: rgb(2 132 199); }
+
+* {
+  border-color: rgb(var(--border-subtle));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border) / 0.8);
+}
+
+/* Respect coarse-pointer (touchscreen) media for bigger tap hit-areas */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .pill {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium tracking-wide uppercase;
+  }
+  .card {
+    @apply bg-bg-panel border border-border-subtle rounded-xl;
+  }
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm text-slate-200 hover:bg-bg-hover transition-colors;
+  }
+  .btn-primary {
+    @apply bg-amber-500/15 border-amber-500/30 text-amber-200 hover:bg-amber-500/25;
+  }
+  .input {
+    @apply bg-bg-base border border-border rounded-md px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-500
+           focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
