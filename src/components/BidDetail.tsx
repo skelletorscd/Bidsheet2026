@@ -5,6 +5,7 @@ import {
   formatMiles,
   formatPay,
 } from "../util/format";
+import { lazy, Suspense } from "react";
 import { RouteRender } from "./RouteRender";
 import {
   Calendar,
@@ -15,6 +16,12 @@ import {
   Star,
   Tag,
 } from "lucide-react";
+
+// Map + Leaflet are ~150 KB un-gzipped; load on demand so the initial
+// bundle stays small for drivers who only skim the list.
+const BidRouteMap = lazy(() =>
+  import("./BidRouteMap").then((m) => ({ default: m.BidRouteMap })),
+);
 
 type Props = {
   bid: Bid;
@@ -188,6 +195,21 @@ export function BidDetail({
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+          Route map
+        </h2>
+        <Suspense
+          fallback={
+            <div className="h-[260px] sm:h-[340px] rounded-xl border border-border-subtle bg-bg-panel/60 flex items-center justify-center text-xs text-slate-500">
+              Loading map…
+            </div>
+          }
+        >
+          <BidRouteMap bid={bid} locations={locations} />
+        </Suspense>
       </section>
 
       <section className="mt-6">

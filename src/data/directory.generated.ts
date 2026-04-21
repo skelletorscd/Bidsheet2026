@@ -11,6 +11,8 @@ export type DirectoryRow = {
   phone: string | null;
   notes: string | null;
   category: DirectoryCategory;
+  lat?: number;
+  lng?: number;
 };
 
 export const DIRECTORY: DirectoryRow[] = [
@@ -22,7 +24,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "799 Jefferson Rd, Parsippany-Troy Hills, NJ 07054",
     "phone": "(973) 428-2287",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.8446002,
+    "lng": -74.4191354
   },
   {
     "code": "SYRNY",
@@ -42,7 +46,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1907 James E. Casey, Buffalo, NY 14206",
     "phone": "(716) 821-6045",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.882652,
+    "lng": -78.8070113
   },
   {
     "code": "NEWPA",
@@ -52,7 +58,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "521 N Center Ave, New Stanton, PA 15672",
     "phone": "(724) 925-4863",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.2242206,
+    "lng": -79.6175483
   },
   {
     "code": "DUBPA",
@@ -62,7 +70,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "690 Division St, DuBois, PA 15801",
     "phone": null,
     "notes": "Door code 1907*",
-    "category": "center"
+    "category": "center",
+    "lat": 41.1255132,
+    "lng": -78.7476258
   },
   {
     "code": "WILPA",
@@ -72,7 +82,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "700 Blair Mill Rd, Horsham, PA 19044",
     "phone": "(215) 830-7900",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.160347,
+    "lng": -75.1397139
   },
   {
     "code": "LEXKY",
@@ -82,7 +94,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1702 Mercer Rd, Lexington, KY 40511",
     "phone": "(859)-259-4350",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 38.0784928,
+    "lng": -84.5336398
   },
   {
     "code": "WONKY",
@@ -102,7 +116,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1099 E Main St, Newark, OH 43055",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.061349,
+    "lng": -82.360297
   },
   {
     "code": "OBEOH",
@@ -112,7 +128,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2450 Rathmell Rd, Columbus, OH 43207",
     "phone": "(614) 497-6006",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.8646386,
+    "lng": -82.9399652
   },
   {
     "code": "COLOH",
@@ -122,7 +140,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5101 Trabue Rd, Columbus, OH 43228",
     "phone": "(614) 870-4193",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.9824125,
+    "lng": -83.1348706
   },
   {
     "code": "MRIOH",
@@ -132,7 +152,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1476 Likens Rd, Marion, OH 43302",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.629919,
+    "lng": -83.094837
   },
   {
     "code": "FREOH",
@@ -142,7 +164,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "727 Hagerty Dr, Fremont, OH 43420",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.3728778,
+    "lng": -83.1162507
   },
   {
     "code": "DEFOH",
@@ -152,7 +176,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "820 Carpenter Rd, Defiance, OH 43512",
     "phone": "(419) 782-3552",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.2998008,
+    "lng": -84.3418338
   },
   {
     "code": "NBLOH",
@@ -162,7 +188,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "16615 Deshler Rd, North Baltimore, OH 45872",
     "phone": "(567) 432-6064",
     "notes": "Dispatch office at door 51",
-    "category": "center"
+    "category": "center",
+    "lat": 41.1830055,
+    "lng": -83.6959562
   },
   {
     "code": "TOLOH",
@@ -172,7 +200,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1550 Holland Rd, Maumee, OH 43537",
     "phone": "(419) 891-6700",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.5822646,
+    "lng": -83.6678461
   },
   {
     "code": "AUBOH",
@@ -182,7 +212,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1553 SR-45, Austinburg, OH 44010",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.766101,
+    "lng": -80.8545811
   },
   {
     "code": "ELYOH",
@@ -192,7 +224,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "245 Warden Ave, Elyria, OH 44035",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.3890562,
+    "lng": -82.123118
   },
   {
     "code": "HIHOH",
@@ -202,7 +236,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "331 Bishop Rd, Highland Heights, OH 44143",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.5662659,
+    "lng": -81.4780995
   },
   {
     "code": "CLEOH",
@@ -212,7 +248,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4300 E 68th St, Cleveland, OH 44105",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.442305,
+    "lng": -81.641814
   },
   {
     "code": "WADOH",
@@ -222,7 +260,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "478 Corporate Pkwy, Wadsworth, OH 44281",
     "phone": "(330) 334-3753",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.0056632,
+    "lng": -81.7472472
   },
   {
     "code": "MIDOH",
@@ -232,7 +272,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "17940 Englewood Dr, Middleburg Heights, OH 44130",
     "phone": "(440) 826-2518",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.3812325,
+    "lng": -81.8282104
   },
   {
     "code": "AKROH",
@@ -242,7 +284,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1635 Industrial Pkwy, Akron, OH 44310",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.107783,
+    "lng": -81.4801411
   },
   {
     "code": "TRMOH",
@@ -252,7 +296,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "800 Trumbull Ave, Girard, OH 44420",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.141224,
+    "lng": -80.676259
   },
   {
     "code": "MAHOH",
@@ -262,7 +308,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "95 Karago Ave, Boardman, OH 44512",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.0049996,
+    "lng": -80.6581093
   },
   {
     "code": "NPHOH",
@@ -272,7 +320,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "241 8th St SW, New Philadelphia, OH 44663",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.4897232,
+    "lng": -81.4603535
   },
   {
     "code": "CANOH",
@@ -282,7 +332,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4850 Navarre Rd SW, Canton, OH 44706",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.7849615,
+    "lng": -81.4045459
   },
   {
     "code": "SANOH",
@@ -292,7 +344,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "12614 US-250, Milan, OH 44846",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.2943542,
+    "lng": -82.6083925
   },
   {
     "code": "MANOH",
@@ -302,7 +356,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "875 W Longview Ave, Mansfield, OH 44903",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.7757122,
+    "lng": -82.5463593
   },
   {
     "code": "SHAOH",
@@ -322,7 +378,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "500 Gest St, Cincinnati, OH 45203",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.09935,
+    "lng": -84.525948
   },
   {
     "code": "PIQOH",
@@ -332,7 +390,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "8460 Industry Park Dr, Piqua, OH 45356",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.1578953,
+    "lng": -84.231449
   },
   {
     "code": "WCAOH",
@@ -352,7 +412,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1308 Brandt Pike, Dayton, OH 45404",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.7947233,
+    "lng": -84.1542628
   },
   {
     "code": "SPFOH",
@@ -372,7 +434,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1536 N Bridge St, Chillicothe, OH 45601",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.3684802,
+    "lng": -82.9757819
   },
   {
     "code": "LIMOH",
@@ -382,7 +446,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "801 Industry Ave, Lima, OH 45804",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.7297323,
+    "lng": -84.082512
   },
   {
     "code": "CELOH",
@@ -392,7 +458,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1851 Industrial Dr, Celina, OH 45822",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.5583174,
+    "lng": -84.5455946
   },
   {
     "code": "FINOH",
@@ -432,7 +500,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5380 W 81st St, Indianapolis, IN 46268",
     "phone": "(317) 532-3535",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.9015549,
+    "lng": -86.2519535
   },
   {
     "code": "SOUIN",
@@ -442,7 +512,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3800 Lathrop St, South Bend, IN 46628",
     "phone": "(574) 236-5525",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7080477,
+    "lng": -86.3026619
   },
   {
     "code": "WATIN",
@@ -452,7 +524,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "100 Industrial Pkwy, Waterloo, IN 46793",
     "phone": "(219) 837-7851",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.439449,
+    "lng": -85.046073
   },
   {
     "code": "FORIN",
@@ -462,7 +536,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2727 Independence Dr, Fort Wayne, IN 46808",
     "phone": "(260) 483-5966",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.107788,
+    "lng": -85.1772438
   },
   {
     "code": "MUNIN",
@@ -472,7 +548,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1901 W 26th St, Muncie, IN 47302",
     "phone": "(765) 289-4856",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.1638159,
+    "lng": -85.4208259
   },
   {
     "code": "PONMI",
@@ -482,7 +560,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1056 Cesar E Chavez Ave, Pontiac, MI 48340",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.6613221,
+    "lng": -83.3203561
   },
   {
     "code": "PORMI",
@@ -492,7 +572,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1616 Cleveland Ave, Port Huron, MI 48060",
     "phone": null,
     "notes": "08 Key required",
-    "category": "center"
+    "category": "center",
+    "lat": 42.9501263,
+    "lng": -82.4432326
   },
   {
     "code": "MHEMI",
@@ -502,7 +584,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1400 E Whitcomb Ave, Madison Heights, MI 48071",
     "phone": "(248) 597-3103",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.5254164,
+    "lng": -83.0902551
   },
   {
     "code": "YPSMI",
@@ -512,7 +596,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "540 S Mansfield St, Ypsilanti, MI 48197",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.231663,
+    "lng": -83.6328754
   },
   {
     "code": "TAYMI",
@@ -522,7 +608,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "25600 Northline Rd, Taylor, MI 48180",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.211648,
+    "lng": -83.285104
   },
   {
     "code": "MONMI",
@@ -532,7 +620,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "15400 S Telegraph Rd, Monroe, MI 48161",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.898502,
+    "lng": -83.4307155
   },
   {
     "code": "WOOMI",
@@ -542,7 +632,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "19951 Hoover St, Detroit, MI 48205",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.4473921,
+    "lng": -83.0051677
   },
   {
     "code": "LIVMI",
@@ -552,7 +644,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "29855 Schoolcraft, Livonia, MI 48150",
     "phone": "(734) 523-1186",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.382816,
+    "lng": -83.339692
   },
   {
     "code": "CICMI",
@@ -562,7 +656,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6061 Cicotte St, Detroit, MI 48210",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.3429328,
+    "lng": -83.1338059
   },
   {
     "code": "WIXMI",
@@ -572,7 +668,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "49524 Martin Dr, Wixom, MI 48393",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.5138882,
+    "lng": -83.5374653
   },
   {
     "code": "FLIMI",
@@ -582,7 +680,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4030 Market Pl, Flint, MI 48507",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.9735584,
+    "lng": -83.7601727
   },
   {
     "code": "CANMI",
@@ -592,7 +692,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2115 Howard St, Detroit, MI 48216",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.3227938,
+    "lng": -83.0703448
   },
   {
     "code": "SAGMI",
@@ -602,7 +704,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3151 McCarty Rd, Saginaw, MI 48603",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.4653107,
+    "lng": -83.9780122
   },
   {
     "code": "WESMI",
@@ -612,7 +716,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "615 Parkway Dr, West Branch, MI 48661",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 44.266386,
+    "lng": -84.2278778
   },
   {
     "code": "CASMI",
@@ -622,7 +728,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6254 Division St, Cass City, MI 48726",
     "phone": null,
     "notes": "Reverse Trip",
-    "category": "center"
+    "category": "center",
+    "lat": 43.5898976,
+    "lng": -83.1827523
   },
   {
     "code": "HOWMI",
@@ -642,7 +750,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1013-1/2, N Mission St, Mt Pleasant, MI 48858",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.608151,
+    "lng": -84.7677137
   },
   {
     "code": "LANMI",
@@ -652,7 +762,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5800 Enterprise Dr, Lansing, MI 48911",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.6749613,
+    "lng": -84.5288041
   },
   {
     "code": "KALMI",
@@ -662,7 +774,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6688 Beatrice Dr, Kalamazoo, MI 49009",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.2406731,
+    "lng": -85.6856798
   },
   {
     "code": "BCRMI",
@@ -682,7 +796,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "320 Palladium Ave, St Joseph, MI 49085",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.0563448,
+    "lng": -86.4612011
   },
   {
     "code": "JACMI",
@@ -692,7 +808,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2009 Dunigan Dr, Jackson, MI 49203",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.2219904,
+    "lng": -84.3840989
   },
   {
     "code": "ADRMI",
@@ -702,7 +820,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1129 Lowe Ave, Adrian, MI 49221",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.8908738,
+    "lng": -84.0212843
   },
   {
     "code": "BIGMI",
@@ -712,7 +832,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "106 N Bronson Ave, Big Rapids, MI 49307",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.7024518,
+    "lng": -85.4634865
   },
   {
     "code": "LUDMI",
@@ -722,7 +844,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.9555406,
+    "lng": -86.4477416
   },
   {
     "code": "MSKMI",
@@ -732,7 +856,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2399 Roberts St, Muskegon, MI 49444",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.2089854,
+    "lng": -86.2147434
   },
   {
     "code": "GRAMI",
@@ -742,7 +868,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5757 Clyde Park Ave SW, Wyoming, MI 49519",
     "phone": "(616) 249-7408",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.8596001,
+    "lng": -85.6837685
   },
   {
     "code": "CADMI",
@@ -752,7 +880,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1421 Potthoff St, Cadillac, MI 49601",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 44.265142,
+    "lng": -85.4342349
   },
   {
     "code": "TRAMI",
@@ -762,7 +892,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 44.7606481,
+    "lng": -85.6165976
   },
   {
     "code": "GLYMI",
@@ -772,7 +904,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 45.027513,
+    "lng": -84.674752
   },
   {
     "code": "PETMI",
@@ -792,7 +926,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 45.820233,
+    "lng": -88.06596
   },
   {
     "code": "MARMI",
@@ -822,7 +958,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 46.8591287,
+    "lng": -88.7774734
   },
   {
     "code": "BESMI",
@@ -832,7 +970,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 46.4813363,
+    "lng": -90.0529504
   },
   {
     "code": "NORIL",
@@ -842,7 +982,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.128704,
+    "lng": -87.8265089
   },
   {
     "code": "FRAIL",
@@ -852,7 +994,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.9353084,
+    "lng": -87.865618
   },
   {
     "code": "PALIL",
@@ -862,7 +1006,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.1105502,
+    "lng": -88.0434304
   },
   {
     "code": "ADDIL",
@@ -872,7 +1018,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "150 S Lombard Rd, Addison, IL 60101",
     "phone": "(630) 628-2180",
     "notes": "DO NOT USE ARMY TRAIL BLVD",
-    "category": "center"
+    "category": "center",
+    "lat": 41.9244949,
+    "lng": -88.026427
   },
   {
     "code": "BEDIL",
@@ -882,7 +1030,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6700 W 73rd St, Bedford Park, IL 60638",
     "phone": "(708) 496-7200",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7612191,
+    "lng": -87.7878816
   },
   {
     "code": "CCHIL",
@@ -892,7 +1042,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1 UPS Way, Hodgkins, IL 60525",
     "phone": "(708) 387-4991",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7476844,
+    "lng": -87.8808314
   },
   {
     "code": "JEFIL",
@@ -902,7 +1054,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1500 S Jefferson St, Chicago, IL 60607",
     "phone": "(312) 942-7685",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.862292,
+    "lng": -87.642132
   },
   {
     "code": "ALMMI",
@@ -912,7 +1066,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.37892,
+    "lng": -84.659727
   },
   {
     "code": "H69IN",
@@ -922,7 +1078,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.634874,
+    "lng": -84.99928
   },
   {
     "code": "TR8IN",
@@ -932,7 +1090,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.634874,
+    "lng": -84.99928
   },
   {
     "code": "UNOMI",
@@ -942,7 +1102,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3670 E Washington Rd, Saginaw, MI 48601",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 43.4497661,
+    "lng": -83.8877306
   },
   {
     "code": "BE2PA",
@@ -952,7 +1114,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "245 Allegheny Blvd, Brookville, PA 15825",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.1726702,
+    "lng": -79.0991643
   },
   {
     "code": "DUXPA",
@@ -972,7 +1136,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.1539613,
+    "lng": -79.7411535
   },
   {
     "code": "TPTPA",
@@ -982,7 +1148,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4050 Depot Rd, Erie, PA 16510",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.1410677,
+    "lng": -79.9247285
   },
   {
     "code": "E10OH",
@@ -1002,7 +1170,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "I-76, North Lima, OH 44452",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.9585778,
+    "lng": -80.6439193
   },
   {
     "code": "FLOKY",
@@ -1012,7 +1182,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 38.9989499,
+    "lng": -84.6266111
   },
   {
     "code": "LONKY",
@@ -1022,7 +1194,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "15 Dogpatch Trading Center, London, KY 40741",
     "phone": null,
     "notes": "Use the gravel lot in back to swap out loads.",
-    "category": "center"
+    "category": "center",
+    "lat": 37.1456342,
+    "lng": -84.1136233
   },
   {
     "code": "PLIWV",
@@ -1032,7 +1206,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 38.620364,
+    "lng": -81.9873601
   },
   {
     "code": "GOMART",
@@ -1052,7 +1228,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "13019 Walton-Verona Rd, Walton, KY 41094",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 38.8582495,
+    "lng": -84.6247117
   },
   {
     "code": "WPOIN",
@@ -1062,7 +1240,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3862 Calumet Ave, Hammond, IN 46320",
     "phone": "(219) 937-9413",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6187826,
+    "lng": -87.5089076
   },
   {
     "code": "ADFOH",
@@ -1112,7 +1292,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6500 W Mt Hope Hwy, Lansing, MI 48917",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.7121606,
+    "lng": -84.6433646
   },
   {
     "code": "DTW1",
@@ -1122,7 +1304,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "32801 Ecorse Rd, Romulus, MI 48174",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.2506052,
+    "lng": -83.3616788
   },
   {
     "code": "DTW3",
@@ -1142,7 +1326,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "39000 Amrhein Rd, Livonia, MI 48150",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.3743432,
+    "lng": -83.4288557
   },
   {
     "code": "DET2",
@@ -1152,7 +1338,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "6360 23 Mile Rd, Shelby Township, MI 48316",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.6692507,
+    "lng": -83.0492074
   },
   {
     "code": "DET3",
@@ -1162,7 +1350,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.6483265,
+    "lng": -83.2499246
   },
   {
     "code": "PCW1",
@@ -1172,7 +1362,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "27400 Crossroads Pkwy, Rossford. OH 43640",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.5510422,
+    "lng": -83.5832347
   },
   {
     "code": "AMFOH",
@@ -1212,7 +1404,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 40.216609,
+    "lng": -81.9557342
   },
   {
     "code": "BSNOH",
@@ -1222,7 +1416,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6203626,
+    "lng": -83.6894453
   },
   {
     "code": "BEROH",
@@ -1232,7 +1428,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1100 King Rd, Toledo, OH 43617",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6520803,
+    "lng": -83.7223205
   },
   {
     "code": "BBCOH",
@@ -1292,7 +1490,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6822631,
+    "lng": -83.491369
   },
   {
     "code": "CDIOH",
@@ -1322,7 +1522,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.626126,
+    "lng": -83.5289068
   },
   {
     "code": "CTEOH",
@@ -1332,7 +1534,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "330 Ryder Rd, Toledo, OH 43607",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6423559,
+    "lng": -83.6189328
   },
   {
     "code": "NFDOH",
@@ -1362,7 +1566,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "10444 Waterville St, Whitehouse, OH 43571",
     "phone": null,
     "notes": "Use either dock 1 or 2",
-    "category": "center"
+    "category": "center",
+    "lat": 41.5165167,
+    "lng": -83.8140703
   },
   {
     "code": "FRPOH",
@@ -1372,7 +1578,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.5947066,
+    "lng": -83.5363738
   },
   {
     "code": "FIVOH",
@@ -1382,7 +1590,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5401 Baumhart Rd, Lorain, OH 44053",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.427401,
+    "lng": -82.280288
   },
   {
     "code": "FSGMI",
@@ -1402,7 +1612,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "555 Blue Heron Dr, Oregon, OH 43616",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6627567,
+    "lng": -83.4427189
   },
   {
     "code": "FIIOH",
@@ -1452,7 +1664,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7003414,
+    "lng": -81.2744968
   },
   {
     "code": "HFROH",
@@ -1462,7 +1676,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.284142,
+    "lng": -81.6908616
   },
   {
     "code": "HTPOH",
@@ -1472,7 +1688,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.4667541,
+    "lng": -81.7023982
   },
   {
     "code": "HMDOH",
@@ -1492,7 +1710,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.9849837,
+    "lng": -83.1466868
   },
   {
     "code": "IPROH",
@@ -1502,7 +1722,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2840 Centennial Rd, Toledo, OH 43617",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.670073,
+    "lng": -83.740468
   },
   {
     "code": "JBLMI",
@@ -1512,7 +1734,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "31720 Plymouth Rd, Livonia, MI 48150",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.3686959,
+    "lng": -83.3565204
   },
   {
     "code": "JBTMI",
@@ -1522,7 +1746,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "37200 Amrhein Rd, Livonia, MI 48150",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.3747663,
+    "lng": -83.4111871
   },
   {
     "code": "KSOOH",
@@ -1542,7 +1768,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.1466121,
+    "lng": -84.425046
   },
   {
     "code": "LOWOH",
@@ -1552,7 +1780,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.4231005,
+    "lng": -81.7362875
   },
   {
     "code": "KREOH",
@@ -1572,7 +1802,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.3431624,
+    "lng": -82.9908617
   },
   {
     "code": "MMEMI",
@@ -1612,7 +1844,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4100 Bennett Rd, Toledo, OH 43612",
     "phone": null,
     "notes": "Gate code:4848. door 8, 9 or 10",
-    "category": "center"
+    "category": "center",
+    "lat": 41.695536,
+    "lng": -83.555959
   },
   {
     "code": "MOOOH",
@@ -1652,7 +1886,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.1121525,
+    "lng": -84.5158986
   },
   {
     "code": "NSPOH",
@@ -1672,7 +1908,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.143859,
+    "lng": -84.5209075
   },
   {
     "code": "NOMOH",
@@ -1692,7 +1930,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3540 Wayland Dr, Jackson, MI 49202",
     "phone": "(517) 784-1811",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.2710694,
+    "lng": -84.4560249
   },
   {
     "code": "NFOOH",
@@ -1742,7 +1982,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1290 Waterville Monclova Rd. Waterville, OH 43566",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.4915073,
+    "lng": -83.7382892
   },
   {
     "code": "PMIOH",
@@ -1772,7 +2014,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "4444 N Detroit Ave, Toledo, OH 43612",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6998155,
+    "lng": -83.5462921
   },
   {
     "code": "RAKMI",
@@ -1792,7 +2036,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "100 N Fearing Blvd, Toledo, OH 43607",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6408673,
+    "lng": -83.5905689
   },
   {
     "code": "SWOOH",
@@ -1852,7 +2098,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "7101 Vorden Pkwy, South Bend, IN 46628",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7269814,
+    "lng": -86.3522702
   },
   {
     "code": "NFOOH",
@@ -1892,7 +2140,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3235 Nebraska Ave, Toledo, OH 43607",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6454545,
+    "lng": -83.6199781
   },
   {
     "code": "VPLOH",
@@ -1962,7 +2212,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "610 Phoenix Dr, Ann Arbor, MI 48108",
     "phone": "(734) 477-6986",
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 42.2321334,
+    "lng": -83.7283982
   },
   {
     "code": "COLRR",
@@ -1982,7 +2234,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2101 Hill Ave, Toledo, OH 43607",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.6388412,
+    "lng": -83.5921641
   },
   {
     "code": "MRROH",
@@ -2002,7 +2256,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "1276 W 8th St, Cincinnati, OH 45203",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 39.1043481,
+    "lng": -84.5391511
   },
   {
     "code": "SFWRR",
@@ -2012,7 +2268,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "7600 Santa Fe Dr, Hodgkins, IL 60525",
     "phone": null,
     "notes": null,
-    "category": "center"
+    "category": "center",
+    "lat": 41.7648756,
+    "lng": -87.8578291
   },
   {
     "code": "PHLPA",
@@ -2042,7 +2300,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "airport"
+    "category": "airport",
+    "lat": 39.9970561,
+    "lng": -82.8930477
   },
   {
     "code": "CLEAP",
@@ -2052,7 +2312,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "5203 W Hangar Rd, Cleveland, OH 44135",
     "phone": null,
     "notes": null,
-    "category": "airport"
+    "category": "airport",
+    "lat": 41.418492,
+    "lng": -81.8511281
   },
   {
     "code": "DTWMI",
@@ -2062,7 +2324,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "30501 Northline Rd, Romulus, MI 48174",
     "phone": null,
     "notes": null,
-    "category": "airport"
+    "category": "airport",
+    "lat": 42.2085825,
+    "lng": -83.3862605
   },
   {
     "code": "LANAS",
@@ -2072,7 +2336,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "2517 Port Lansing Rd, Lansing, MI 48906",
     "phone": null,
     "notes": null,
-    "category": "airport"
+    "category": "airport",
+    "lat": 42.7728123,
+    "lng": -84.5808047
   },
   {
     "code": "RFDIL",
@@ -2082,7 +2348,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": "3300 Airport Dr, Rockford, IL 61109",
     "phone": null,
     "notes": null,
-    "category": "airport"
+    "category": "airport",
+    "lat": 42.2009807,
+    "lng": -89.1041414
   },
   {
     "code": "ELMOH",
@@ -2112,7 +2380,9 @@ export const DIRECTORY: DirectoryRow[] = [
     "address": null,
     "phone": null,
     "notes": null,
-    "category": "toll"
+    "category": "toll",
+    "lat": 41.721372,
+    "lng": -85.4206528
   },
   {
     "code": "SWAOH",
