@@ -30,6 +30,7 @@ const DEFAULT_FILTER: FilterState = {
   payType: "all",
   scheduleKind: "all",
   qual: "all",
+  status: "all",
   startTimeFrom: "",
   startTimeTo: "",
   sort: "bidNum",
@@ -105,6 +106,11 @@ export function AnnualBidView({
   const filtered = useMemo(
     () => sortBids(filterBids(bids, filter), filter.sort),
     [bids, filter],
+  );
+
+  const availableCount = useMemo(
+    () => bids.filter((b) => b.status === "available").length,
+    [bids],
   );
 
   useEffect(() => {
@@ -187,6 +193,7 @@ export function AnnualBidView({
         qualOptions={qualOptions}
         resultCount={filtered.length}
         totalCount={bids.length}
+        availableCount={availableCount}
       />
       <div className="flex flex-1 overflow-hidden">
         <aside
@@ -270,6 +277,8 @@ function filterBids(bids: Bid[], f: FilterState): Bid[] {
   const fromMin = parseTimeInput(f.startTimeFrom);
   const toMin = parseTimeInput(f.startTimeTo, true);
   return bids.filter((b) => {
+    if (f.status === "available" && b.status !== "available") return false;
+    if (f.status === "taken" && b.status === "available") return false;
     if (f.payType !== "all" && b.payType !== f.payType) return false;
     if (f.scheduleKind === "weekday" && b.hasWeekend) return false;
     if (f.scheduleKind === "weekend" && !b.hasWeekend) return false;

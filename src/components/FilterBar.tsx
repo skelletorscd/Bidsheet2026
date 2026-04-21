@@ -13,6 +13,7 @@ export type FilterState = {
   payType: "all" | "hourly" | "mileage" | "mixed";
   scheduleKind: "all" | "weekday" | "weekend";
   qual: "all" | string;
+  status: "all" | "available" | "taken";
   startTimeFrom: string;
   startTimeTo: string;
   sort: SortKey;
@@ -24,6 +25,7 @@ type Props = {
   qualOptions: string[];
   resultCount: number;
   totalCount: number;
+  availableCount: number;
 };
 
 export function FilterBar({
@@ -32,6 +34,7 @@ export function FilterBar({
   qualOptions,
   resultCount,
   totalCount,
+  availableCount,
 }: Props) {
   const setField = <K extends keyof FilterState>(
     key: K,
@@ -45,6 +48,7 @@ export function FilterBar({
       state.payType !== "all" ||
       state.scheduleKind !== "all" ||
       state.qual !== "all" ||
+      state.status !== "all" ||
       state.startTimeFrom ||
       state.startTimeTo,
   );
@@ -53,7 +57,10 @@ export function FilterBar({
     (state.payType !== "all" ? 1 : 0) +
     (state.scheduleKind !== "all" ? 1 : 0) +
     (state.qual !== "all" ? 1 : 0) +
+    (state.status !== "all" ? 1 : 0) +
     (state.startTimeFrom || state.startTimeTo ? 1 : 0);
+
+  const onlyAvailable = state.status === "available";
 
   return (
     <div className="bg-bg-base border-b border-border-subtle">
@@ -80,6 +87,17 @@ export function FilterBar({
               {activeCount}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setField("status", onlyAvailable ? "all" : "available")
+          }
+          className={`btn h-10 ${onlyAvailable ? "btn-primary" : ""}`}
+          title="Only show bids that haven't been taken"
+        >
+          {onlyAvailable ? "Available only ✓" : "Available only"}
         </button>
 
         <div
@@ -170,6 +188,7 @@ export function FilterBar({
                   payType: "all",
                   scheduleKind: "all",
                   qual: "all",
+                  status: "all",
                   startTimeFrom: "",
                   startTimeTo: "",
                   sort: state.sort,
@@ -182,8 +201,14 @@ export function FilterBar({
           )}
         </div>
 
-        <div className="ml-auto text-xs text-slate-400 tabular">
-          {resultCount} of {totalCount}
+        <div className="ml-auto text-xs text-slate-400 tabular text-right leading-tight">
+          <div>
+            <span className="text-slate-200 font-semibold">{resultCount}</span>{" "}
+            of {totalCount}
+          </div>
+          <div className="text-[10px] text-emerald-300">
+            {availableCount} available
+          </div>
         </div>
       </div>
     </div>
