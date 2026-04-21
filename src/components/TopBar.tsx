@@ -53,10 +53,10 @@ export function TopBar({
           </div>
           <div className="leading-tight">
             <div className="text-[15px] font-semibold text-slate-100">
-              Toledo Feeder Bids
+              Feeder Bids 2026
             </div>
             <div className="text-[11px] text-slate-400 tabular">
-              2026 Annual Bid Notice
+              Toledo · North Baltimore
             </div>
           </div>
         </div>

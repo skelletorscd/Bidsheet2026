@@ -8,8 +8,10 @@ import { SeniorityView } from "./views/SeniorityView";
 import { BidTimesView } from "./views/BidTimesView";
 import { OnCallView } from "./views/OnCallView";
 import { CelebrationStack } from "./components/CelebrationStack";
+import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
 import { useTakenBids } from "./data/useTakenBids";
 import { useBidTakenToasts } from "./data/useBidTakenToasts";
+import { useGlobalCounts } from "./data/useGlobalCounts";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
 import { TAB_SOURCES, TabKey } from "./data/sources";
@@ -73,6 +75,7 @@ export default function App() {
     takenBids.taken,
     takenBids.loading,
   );
+  const globalCounts = useGlobalCounts(settings);
 
   // `locations` already merges the baked directory (via SEED_LOCATIONS in
   // loadLocations) with any user overrides in localStorage.
@@ -142,6 +145,7 @@ export default function App() {
         onRefresh={() => setRefreshTick((t) => t + 1)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
+      <GlobalCountsStrip counts={globalCounts} />
       <TabStrip />
       <div className="flex-1 flex flex-col overflow-hidden">
         {tab.kind === "annualBid" && (
