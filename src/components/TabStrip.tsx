@@ -3,6 +3,7 @@ import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
   Building2,
   ListOrdered,
+  Mail,
   MapPin,
   Phone,
   Clock,
@@ -18,6 +19,7 @@ const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   oncallNbloh: Phone,
   bidTimes: Clock,
   locations: MapPin,
+  contact: Mail,
 };
 
 export function TabStrip() {

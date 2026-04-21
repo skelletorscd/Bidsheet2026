@@ -6,7 +6,8 @@ export type TabKey =
   | "oncallToloh"
   | "oncallNbloh"
   | "bidTimes"
-  | "locations";
+  | "locations"
+  | "contact";
 
 export type TabSource = {
   key: TabKey;
@@ -14,7 +15,13 @@ export type TabSource = {
   shortLabel: string;
   hub: "TOL" | "NBL" | "ALL" | null;
   gid: number | null;
-  kind: "annualBid" | "seniority" | "bidTimes" | "onCall" | "locations";
+  kind:
+    | "annualBid"
+    | "seniority"
+    | "bidTimes"
+    | "onCall"
+    | "locations"
+    | "contact";
 };
 
 export const DEFAULT_SPREADSHEET_ID = "1sIu6_ndtJRlmz-1gRRRBCudsLezPPJ0U";
@@ -83,6 +90,14 @@ export const TAB_SOURCES: TabSource[] = [
     hub: null,
     gid: null,
     kind: "locations",
+  },
+  {
+    key: "contact",
+    label: "Contact",
+    shortLabel: "Contact",
+    hub: null,
+    gid: null,
+    kind: "contact",
   },
 ];
 

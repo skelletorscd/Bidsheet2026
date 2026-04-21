@@ -8,6 +8,8 @@ export type BidTakenToast = {
   hub: "TOL" | "NBL" | "ALL" | null;
   driver: string;
   createdAt: number;
+  /** 0..4 — which center-screen celebration variant to play */
+  variant: number;
 };
 
 export function useBidTakenToasts(
@@ -47,6 +49,7 @@ export function useBidTakenToasts(
         hub: t.hub,
         driver: t.driverRaw,
         createdAt: now,
+        variant: Math.floor(Math.random() * 5),
       }));
       setToasts((prev) => [...prev, ...newToasts].slice(-6));
     }

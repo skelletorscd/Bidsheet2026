@@ -7,10 +7,11 @@ import { AnnualBidView } from "./views/AnnualBidView";
 import { SeniorityView } from "./views/SeniorityView";
 import { BidTimesView } from "./views/BidTimesView";
 import { OnCallView } from "./views/OnCallView";
-import { LocationsView } from "./views/LocationsView";
-import { ToastStack } from "./components/ToastStack";
+import { CelebrationStack } from "./components/CelebrationStack";
 import { useTakenBids } from "./data/useTakenBids";
 import { useBidTakenToasts } from "./data/useBidTakenToasts";
+import { LocationsView } from "./views/LocationsView";
+import { ContactView } from "./views/ContactView";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -180,6 +181,9 @@ export default function App() {
         {tab.kind === "locations" && (
           <LocationsView key={childKey} onStatus={reportStatus} />
         )}
+        {tab.kind === "contact" && (
+          <ContactView key={childKey} onStatus={reportStatus} />
+        )}
       </div>
 
       <SettingsModal
@@ -189,7 +193,7 @@ export default function App() {
         onSave={handleSaveSettings}
       />
 
-      <ToastStack toasts={toasts} onDismiss={dismissToast} />
+      <CelebrationStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
