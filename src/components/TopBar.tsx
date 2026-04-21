@@ -45,17 +45,17 @@ export function TopBar({
           : "Live";
 
   return (
-    <header className="sticky top-0 z-30 bg-bg-base/85 backdrop-blur border-b border-border-subtle">
-      <div className="max-w-[1600px] mx-auto px-4 h-14 flex items-center gap-3">
-        <div className="flex items-center gap-2 mr-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+    <header className="sticky top-0 z-30 bg-bg-base/95 backdrop-blur border-b border-border-subtle">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 mr-2 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
             <Truck className="w-4 h-4 text-amber-300" />
           </div>
-          <div className="leading-tight">
-            <div className="text-[15px] font-semibold text-slate-100">
+          <div className="leading-tight min-w-0">
+            <div className="text-[15px] font-semibold text-slate-100 whitespace-nowrap">
               Feeder Bids 2026
             </div>
-            <div className="text-[11px] text-slate-400 tabular">
+            <div className="hidden sm:block text-[11px] text-slate-400 tabular whitespace-nowrap">
               Toledo · North Baltimore
             </div>
           </div>
