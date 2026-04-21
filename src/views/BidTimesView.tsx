@@ -101,12 +101,20 @@ export function BidTimesView({ tab, settings, onStatus }: Props) {
                   return (
                     <li
                       key={r.rank}
-                      className={`px-4 py-2 flex items-center gap-3 hover:bg-bg-hover ${picked ? "opacity-80" : ""}`}
+                      className={`px-4 py-2 flex items-center gap-3 transition-colors ${
+                        picked
+                          ? "bg-emerald-500/[0.06] hover:bg-emerald-500/10"
+                          : "hover:bg-bg-hover"
+                      }`}
                     >
-                      <span className="tabular w-10 text-right text-amber-300 font-semibold">
+                      <span
+                        className={`tabular w-10 text-right font-semibold ${picked ? "text-emerald-300" : "text-amber-300"}`}
+                      >
                         {r.rank}
                       </span>
-                      <span className="flex-1 text-slate-100 font-medium">
+                      <span
+                        className={`flex-1 font-medium ${picked ? "text-emerald-200" : "text-slate-100"}`}
+                      >
                         {r.name}
                       </span>
                       {picked ? (

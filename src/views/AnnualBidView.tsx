@@ -16,7 +16,12 @@ type Props = {
   tab: TabSource;
   settings: Settings;
   locations: Record<string, LocationEntry>;
-  onSaveLocation: (code: string, name: string, confirmed: boolean) => void;
+  onSaveLocation: (
+    code: string,
+    name: string,
+    address: string | undefined,
+    confirmed: boolean,
+  ) => void;
   onStatus: (s: {
     fetchedAt: number | null;
     loading: boolean;
@@ -262,8 +267,9 @@ export function AnnualBidView({
         <LocationEditor
           code={editingCode}
           initialName={locations[editingCode]?.name ?? ""}
-          onSave={(name, confirmed) =>
-            onSaveLocation(editingCode, name, confirmed)
+          initialAddress={locations[editingCode]?.address}
+          onSave={(name, address, confirmed) =>
+            onSaveLocation(editingCode, name, address, confirmed)
           }
           onClose={() => setEditingCode(null)}
         />

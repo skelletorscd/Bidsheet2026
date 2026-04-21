@@ -1,12 +1,20 @@
 import { Bid } from "../types";
-import { LocationEntry } from "../data/locations";
+import { LocationEntry, mapsUrl } from "../data/locations";
 import {
   formatHours,
   formatMiles,
   formatPay,
 } from "../util/format";
 import { RouteRender } from "./RouteRender";
-import { Calendar, Clock, Gauge, MapPin, Star, Tag } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  ExternalLink,
+  Gauge,
+  MapPin,
+  Star,
+  Tag,
+} from "lucide-react";
 
 type Props = {
   bid: Bid;
@@ -179,6 +187,85 @@ export function BidDetail({
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+          Stops on this bid
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {bid.destinations.map((code) => {
+            const entry = locations[code];
+            const known = entry && entry.name && entry.name !== "?";
+            return (
+              <div
+                key={code}
+                className="card p-3 flex items-start gap-3"
+              >
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="font-mono text-[12px] font-semibold tabular bg-slate-800/60 text-slate-200 px-2 py-0.5 rounded">
+                    {code}
+                  </span>
+                  {entry?.slic && (
+                    <span className="text-[10px] text-slate-500 tabular">
+                      SLIC {entry.slic}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {known ? (
+                    <>
+                      <div className="text-sm font-medium text-slate-100">
+                        {entry!.name}
+                      </div>
+                      {entry!.facility && (
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {entry!.facility}
+                        </div>
+                      )}
+                      {entry!.address && (
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {entry!.address}
+                        </div>
+                      )}
+                      {entry!.phone && (
+                        <a
+                          href={`tel:${entry!.phone.replace(/[^\d+]/g, "")}`}
+                          className="text-[11px] text-emerald-300 hover:underline mt-1 inline-block tabular"
+                        >
+                          {entry!.phone}
+                        </a>
+                      )}
+                      {entry!.notes && (
+                        <div className="text-[11px] text-amber-300/80 mt-1 italic">
+                          {entry!.notes}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      className="text-[12px] text-amber-300 hover:underline"
+                      onClick={() => onClickUnknown(code)}
+                    >
+                      Unknown — click to add
+                    </button>
+                  )}
+                </div>
+                {known && (
+                  <a
+                    href={mapsUrl(entry!)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-slate-400 hover:text-amber-300 shrink-0 p-1"
+                    title="Open in Google Maps"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 

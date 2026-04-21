@@ -1,6 +1,13 @@
 import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
-import { Building2, ListOrdered, Phone, Clock, Users } from "lucide-react";
+import {
+  Building2,
+  ListOrdered,
+  MapPin,
+  Phone,
+  Clock,
+  Users,
+} from "lucide-react";
 
 const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   toledo: Building2,
@@ -10,6 +17,7 @@ const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   oncallToloh: Phone,
   oncallNbloh: Phone,
   bidTimes: Clock,
+  locations: MapPin,
 };
 
 export function TabStrip() {

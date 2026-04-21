@@ -17,25 +17,33 @@ const PAY_BADGES: Record<Bid["payType"], string> = {
 const STATUS_BADGES: Record<Bid["status"], string> = {
   available: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
   "in-progress": "bg-amber-500/15 text-amber-300 border-amber-500/30",
-  taken: "bg-slate-700/40 text-slate-400 border-slate-600",
+  taken: "bg-rose-500/20 text-rose-300 border-rose-500/40",
 };
 
 export function BidRow({ bid, selected, onSelect }: Props) {
-  const dim = bid.status === "taken";
+  const taken = bid.status === "taken";
   return (
     <button
       type="button"
       onClick={onSelect}
       className={`w-full text-left px-3 py-2.5 border-l-2 transition-colors ${
         selected
-          ? "bg-amber-500/10 border-amber-400"
-          : "border-transparent hover:bg-bg-hover"
-      } ${dim ? "opacity-60" : ""}`}
+          ? taken
+            ? "bg-rose-500/10 border-rose-400"
+            : "bg-amber-500/10 border-amber-400"
+          : taken
+            ? "border-rose-500/40 bg-rose-500/[0.04] hover:bg-rose-500/10"
+            : "border-transparent hover:bg-bg-hover"
+      }`}
     >
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="font-mono font-bold text-[15px] text-slate-100 tabular">
+            <span
+              className={`font-mono font-bold text-[15px] tabular ${
+                taken ? "text-rose-300 line-through decoration-rose-500/60" : "text-slate-100"
+              }`}
+            >
               {bid.jobNum}
             </span>
             <span className="text-[11px] text-slate-500 tabular">
@@ -64,16 +72,21 @@ export function BidRow({ bid, selected, onSelect }: Props) {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1 mt-1.5">
+      <div className="flex items-center gap-1 mt-1.5 flex-wrap">
         <span className={`pill border ${PAY_BADGES[bid.payType]}`}>
           {bid.payType === "unknown" ? "?" : bid.payType}
         </span>
-        {bid.status !== "available" && (
-          <span className={`pill border ${STATUS_BADGES[bid.status]}`}>
-            {bid.status}
+        {taken && (
+          <span className={`pill border ${STATUS_BADGES.taken}`}>
+            ✗ Taken{bid.takenBy ? ` · ${shortName(bid.takenBy)}` : ""}
           </span>
         )}
-        {bid.hasWeekend && (
+        {bid.status === "in-progress" && (
+          <span className={`pill border ${STATUS_BADGES["in-progress"]}`}>
+            picking
+          </span>
+        )}
+        {bid.hasWeekend && !taken && (
           <span className="pill bg-rose-500/10 text-rose-300 border border-rose-500/30">
             wknd
           </span>
@@ -81,4 +94,10 @@ export function BidRow({ bid, selected, onSelect }: Props) {
       </div>
     </button>
   );
+}
+
+function shortName(full: string): string {
+  const parts = full.trim().split(/\s+/);
+  if (parts.length < 2) return full;
+  return `${parts[0][0]}. ${parts[parts.length - 1]}`;
 }

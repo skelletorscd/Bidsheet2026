@@ -161,14 +161,20 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
                 return (
                   <tr
                     key={row.rank}
-                    className={`border-t border-border-subtle ${
-                      hasPicked ? "opacity-70" : "hover:bg-bg-hover"
+                    className={`border-t border-border-subtle transition-colors ${
+                      hasPicked
+                        ? "bg-emerald-500/[0.06] hover:bg-emerald-500/10"
+                        : "hover:bg-bg-hover"
                     }`}
                   >
-                    <td className="px-3 py-2 text-right tabular font-semibold text-amber-300">
+                    <td
+                      className={`px-3 py-2 text-right tabular font-semibold ${hasPicked ? "text-emerald-300" : "text-amber-300"}`}
+                    >
                       {row.rank}
                     </td>
-                    <td className="px-3 py-2 text-slate-100 font-medium">
+                    <td
+                      className={`px-3 py-2 font-medium ${hasPicked ? "text-emerald-200" : "text-slate-100"}`}
+                    >
                       {row.name}
                     </td>
                     <td className="px-3 py-2 text-slate-300 hidden md:table-cell whitespace-nowrap">

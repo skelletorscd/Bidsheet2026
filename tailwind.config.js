@@ -32,6 +32,31 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.35" },
         },
+        toastIn: {
+          "0%": {
+            opacity: "0",
+            transform: "translateX(40px) scale(0.95)",
+          },
+          "70%": {
+            transform: "translateX(-4px) scale(1.01)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0) scale(1)",
+          },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        sparklePulse: {
+          "0%, 100%": { opacity: "0.5", transform: "scale(0.9)" },
+          "50%": { opacity: "0.9", transform: "scale(1.1)" },
+        },
+        sparkleSpin: {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         pulseDot: "pulseDot 2s ease-in-out infinite",

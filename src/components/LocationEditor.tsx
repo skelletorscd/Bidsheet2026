@@ -4,12 +4,20 @@ import { X } from "lucide-react";
 type Props = {
   code: string;
   initialName: string;
-  onSave: (name: string, confirmed: boolean) => void;
+  initialAddress?: string;
+  onSave: (name: string, address: string | undefined, confirmed: boolean) => void;
   onClose: () => void;
 };
 
-export function LocationEditor({ code, initialName, onSave, onClose }: Props) {
+export function LocationEditor({
+  code,
+  initialName,
+  initialAddress,
+  onSave,
+  onClose,
+}: Props) {
   const [name, setName] = useState(initialName === "?" ? "" : initialName);
+  const [address, setAddress] = useState(initialAddress ?? "");
 
   return (
     <div
@@ -41,20 +49,43 @@ export function LocationEditor({ code, initialName, onSave, onClose }: Props) {
             <span className="font-mono text-amber-300">{code}</span>? Last 2
             chars are usually the state. Saved locally to your browser.
           </p>
-          <input
-            autoFocus
-            className="input w-full"
-            placeholder="e.g. Lansing, MI"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && name.trim()) {
-                onSave(name.trim(), true);
-                onClose();
-              }
-              if (e.key === "Escape") onClose();
-            }}
-          />
+          <label className="block">
+            <span className="text-[11px] uppercase tracking-wider text-slate-500">
+              City
+            </span>
+            <input
+              autoFocus
+              className="input w-full mt-1"
+              placeholder="e.g. Lansing, MI"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") onClose();
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] uppercase tracking-wider text-slate-500">
+              Address (optional)
+            </span>
+            <input
+              className="input w-full mt-1"
+              placeholder="e.g. 1550 Holland Rd, Maumee, OH 43537"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim()) {
+                  onSave(
+                    name.trim(),
+                    address.trim() || undefined,
+                    true,
+                  );
+                  onClose();
+                }
+                if (e.key === "Escape") onClose();
+              }}
+            />
+          </label>
         </div>
         <div className="flex justify-end gap-2 px-4 py-3 border-t border-border-subtle bg-bg-raised/50">
           <button className="btn" onClick={onClose}>
@@ -64,7 +95,11 @@ export function LocationEditor({ code, initialName, onSave, onClose }: Props) {
             className="btn btn-primary"
             onClick={() => {
               if (name.trim()) {
-                onSave(name.trim(), true);
+                onSave(
+                  name.trim(),
+                  address.trim() || undefined,
+                  true,
+                );
                 onClose();
               }
             }}

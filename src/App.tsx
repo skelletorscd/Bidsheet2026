@@ -7,6 +7,10 @@ import { AnnualBidView } from "./views/AnnualBidView";
 import { SeniorityView } from "./views/SeniorityView";
 import { BidTimesView } from "./views/BidTimesView";
 import { OnCallView } from "./views/OnCallView";
+import { LocationsView } from "./views/LocationsView";
+import { ToastStack } from "./components/ToastStack";
+import { useTakenBids } from "./data/useTakenBids";
+import { useBidTakenToasts } from "./data/useBidTakenToasts";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -63,15 +67,33 @@ export default function App() {
 
   const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
 
+  const takenBids = useTakenBids(settings);
+  const { toasts, dismiss: dismissToast } = useBidTakenToasts(
+    takenBids.taken,
+    takenBids.loading,
+  );
+
+  // `locations` already merges the baked directory (via SEED_LOCATIONS in
+  // loadLocations) with any user overrides in localStorage.
+  const mergedLocations = locations;
+
   const handleSaveSettings = useCallback((s: Settings) => {
     setSettings(s);
     saveSettings(s);
   }, []);
 
   const handleSaveLocation = useCallback(
-    (code: string, name: string, confirmed: boolean) => {
+    (
+      code: string,
+      name: string,
+      address: string | undefined,
+      confirmed: boolean,
+    ) => {
       setLocations((prev) => {
-        const next = { ...prev, [code]: { name, confirmed } };
+        const next = {
+          ...prev,
+          [code]: { ...prev[code], name, address, confirmed },
+        };
         saveLocations(next);
         return next;
       });
@@ -126,7 +148,7 @@ export default function App() {
             key={childKey}
             tab={tab}
             settings={settings}
-            locations={locations}
+            locations={mergedLocations}
             onSaveLocation={handleSaveLocation}
             onStatus={reportStatus}
           />
@@ -155,6 +177,9 @@ export default function App() {
             onStatus={reportStatus}
           />
         )}
+        {tab.kind === "locations" && (
+          <LocationsView key={childKey} onStatus={reportStatus} />
+        )}
       </div>
 
       <SettingsModal
@@ -163,6 +188,8 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
+
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
