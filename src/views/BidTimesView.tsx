@@ -6,7 +6,7 @@ import { parseBidTimesCsv, BidTimesRow } from "../parse/people";
 import { PasteFallback } from "../components/PasteFallback";
 import { AlertCircle, Calendar, Inbox } from "lucide-react";
 import { formatCallWindow } from "../util/people";
-import { useTakenBids } from "../data/useTakenBids";
+import { useTakenBids, ON_CALL_JOB_NUM } from "../data/useTakenBids";
 
 type Props = {
   tab: TabSource;
@@ -118,18 +118,29 @@ export function BidTimesView({ tab, settings, onStatus }: Props) {
                         {r.name}
                       </span>
                       {picked ? (
-                        <span className="font-mono text-[12px] font-semibold text-amber-300 tabular">
-                          {picked.jobNum}
-                          {picked.hub && picked.hub !== "TOL" && (
-                            <span className="ml-1 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
-                              {picked.hub === "NBL"
-                                ? "NBL"
-                                : picked.hub === "ALL"
-                                  ? "Sleep"
-                                  : ""}
-                            </span>
-                          )}
-                        </span>
+                        picked.jobNum === ON_CALL_JOB_NUM ? (
+                          <span className="font-mono text-[12px] font-semibold text-sky-300 tabular">
+                            ON-CALL
+                            {picked.hub && (
+                              <span className="ml-1 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                                {picked.hub === "NBL" ? "NBL" : "TOL"}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="font-mono text-[12px] font-semibold text-amber-300 tabular">
+                            {picked.jobNum}
+                            {picked.hub && picked.hub !== "TOL" && (
+                              <span className="ml-1 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                                {picked.hub === "NBL"
+                                  ? "NBL"
+                                  : picked.hub === "ALL"
+                                    ? "Sleep"
+                                    : ""}
+                              </span>
+                            )}
+                          </span>
+                        )
                       ) : (
                         <span className="text-[11px] text-slate-600">
                           pending

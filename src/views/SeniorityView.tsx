@@ -11,7 +11,7 @@ import {
   formatYears,
   formatCallWindow,
 } from "../util/people";
-import { useTakenBids } from "../data/useTakenBids";
+import { useTakenBids, ON_CALL_JOB_NUM } from "../data/useTakenBids";
 
 type Props = {
   tab: TabSource;
@@ -198,18 +198,29 @@ export function SeniorityView({ tab, settings, onStatus }: Props) {
                     </td>
                     <td className="px-3 py-2">
                       {hasPicked ? (
-                        <span className="font-mono font-semibold text-amber-300 tabular">
-                          {pickedBid}
-                          {takenMatch?.hub && takenMatch.hub !== "TOL" && (
-                            <span className="ml-1.5 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
-                              {takenMatch.hub === "NBL"
-                                ? "NBL"
-                                : takenMatch.hub === "ALL"
-                                  ? "Sleep"
-                                  : ""}
-                            </span>
-                          )}
-                        </span>
+                        pickedBid === ON_CALL_JOB_NUM ? (
+                          <span className="font-mono font-semibold text-sky-300 tabular">
+                            ON-CALL
+                            {takenMatch?.hub && (
+                              <span className="ml-1.5 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                                {takenMatch.hub === "NBL" ? "NBL" : "TOL"}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="font-mono font-semibold text-amber-300 tabular">
+                            {pickedBid}
+                            {takenMatch?.hub && takenMatch.hub !== "TOL" && (
+                              <span className="ml-1.5 text-[10px] text-slate-500 font-normal tracking-wider uppercase">
+                                {takenMatch.hub === "NBL"
+                                  ? "NBL"
+                                  : takenMatch.hub === "ALL"
+                                    ? "Sleep"
+                                    : ""}
+                              </span>
+                            )}
+                          </span>
+                        )
                       ) : (
                         <span className="text-slate-600 text-[12px]">
                           pending
