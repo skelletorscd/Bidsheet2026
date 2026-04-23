@@ -9,9 +9,11 @@ import { BidTimesView } from "./views/BidTimesView";
 import { OnCallView } from "./views/OnCallView";
 import { CelebrationStack } from "./components/CelebrationStack";
 import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
+import { ScheduledReplayBanner } from "./components/ScheduledReplayBanner";
 import { useTakenBids } from "./data/useTakenBids";
 import { useBidTakenToasts } from "./data/useBidTakenToasts";
 import { useGlobalCounts } from "./data/useGlobalCounts";
+import { useScheduledCelebration } from "./data/useScheduledCelebration";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
 import { NowBiddingView } from "./views/NowBiddingView";
@@ -111,6 +113,16 @@ export default function App() {
     takenBids.loading,
   );
   const globalCounts = useGlobalCounts(settings);
+  const replay = useScheduledCelebration(settings);
+
+  // Merge any scheduled-replay toasts into the celebration queue.
+  const allToasts = useMemo(
+    () => [...toasts, ...replay.newToasts],
+    [toasts, replay.newToasts],
+  );
+  useEffect(() => {
+    if (replay.newToasts.length > 0) replay.consume();
+  }, [replay]);
 
   // `locations` already merges the baked directory (via SEED_LOCATIONS in
   // loadLocations) with any user overrides in localStorage.
@@ -182,6 +194,7 @@ export default function App() {
         onRefresh={() => setRefreshTick((t) => t + 1)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
+      <ScheduledReplayBanner scheduled={replay.scheduled} />
       <GlobalCountsStrip counts={globalCounts} />
       <TabStrip />
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -241,7 +254,7 @@ export default function App() {
         onSave={handleSaveSettings}
       />
 
-      <CelebrationStack toasts={toasts} onDismiss={dismissToast} />
+      <CelebrationStack toasts={allToasts} onDismiss={dismissToast} />
     </div>
   );
 }
