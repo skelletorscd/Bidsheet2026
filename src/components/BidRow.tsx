@@ -78,7 +78,13 @@ export function BidRow({ bid, selected, onSelect }: Props) {
         </span>
         {taken && (
           <span className={`pill border ${STATUS_BADGES.taken}`}>
-            ✗ Taken{bid.takenBy ? ` · ${shortName(bid.takenBy)}` : ""}
+            ✗ Taken
+            {bid.takers.length > 0 && (
+              <>
+                {" · "}
+                {bid.takers.map((n) => shortName(n)).join(" + ")}
+              </>
+            )}
           </span>
         )}
         {bid.status === "in-progress" && (

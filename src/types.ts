@@ -49,7 +49,10 @@ export type Bid = {
   destinations: string[];
   estimatedWeeklyPay: number;
   status: BidStatus;
+  /** First driver name (kept for back-compat with display code). */
   takenBy: string | null;
+  /** Every driver tied to this bid — sleeper teams have two (A + B slot). */
+  takers: string[];
 };
 
 export type SheetMeta = {

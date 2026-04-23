@@ -52,7 +52,7 @@ export function BidDetail({
             <span className="text-sm text-slate-500 tabular">
               Bid #{bid.bidNum}
             </span>
-            <StatusBadge status={bid.status} takenBy={bid.takenBy} />
+            <StatusBadge status={bid.status} takers={bid.takers} />
           </div>
           <div className="text-sm text-slate-400 mt-1 flex items-center gap-2">
             <Tag className="w-3.5 h-3.5" />
@@ -325,10 +325,10 @@ export function BidDetail({
 
 function StatusBadge({
   status,
-  takenBy,
+  takers,
 }: {
   status: Bid["status"];
-  takenBy: string | null;
+  takers: string[];
 }) {
   if (status === "available") {
     return (
@@ -344,9 +344,15 @@ function StatusBadge({
       </span>
     );
   }
+  const label =
+    takers.length === 0
+      ? "Taken"
+      : takers.length === 1
+        ? `Taken by ${takers[0]}`
+        : `Taken by ${takers.join(" + ")}`;
   return (
     <span className="pill bg-slate-700/40 text-slate-400 border border-slate-600">
-      {takenBy ? `Taken by ${takenBy}` : "Taken"}
+      {label}
     </span>
   );
 }

@@ -50,7 +50,7 @@ function buildBid(
   startTime24: string,
   qualifications: string,
   legs: Leg[],
-  takenBy: string | null,
+  takers: string[],
 ): Bid {
   let totalHours = 0;
   let totalMiles = 0;
@@ -81,8 +81,9 @@ function buildBid(
     hasWeekend,
     destinations: Array.from(dest),
     estimatedWeeklyPay: 0,
-    status: takenBy ? "taken" : "available",
-    takenBy,
+    status: takers.length > 0 ? "taken" : "available",
+    takenBy: takers[0] ?? null,
+    takers,
   };
 }
 
@@ -166,7 +167,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
         startTime24: string;
         qualifications: string;
         legs: Leg[];
-        takenBy: string | null;
+        takers: string[];
       }
     | null = null;
 
@@ -179,11 +180,17 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
           cur.startTime24,
           cur.qualifications,
           cur.legs,
-          cur.takenBy,
+          cur.takers,
         ),
       );
       cur = null;
     }
+  };
+
+  const addTaker = (raw: string) => {
+    const t = extractTakenBy(raw);
+    if (!t || !cur) return;
+    if (!cur.takers.includes(t)) cur.takers.push(t);
   };
 
   for (let i = headerIdx + 1; i < rows.length; i++) {
@@ -213,8 +220,9 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
         startTime24: time,
         qualifications: colD,
         legs: [],
-        takenBy: extractTakenBy(colH),
+        takers: [],
       };
+      addTaker(colH);
       if (colE || colF || colG) {
         cur.legs.push(makeLeg(colE, colF, colG, null, null, defaultUnit));
       }
@@ -223,10 +231,7 @@ export function parseAnnualBidCsv(csvText: string): ParsedSheet {
 
     if (!cur) continue;
 
-    if (!cur.takenBy) {
-      const legTakenBy = extractTakenBy(colH);
-      if (legTakenBy) cur.takenBy = legTakenBy;
-    }
+    addTaker(colH);
 
     const hasDays = colE.length > 0;
     const hasRoute = colF.length > 0;

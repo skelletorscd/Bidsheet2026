@@ -86,14 +86,17 @@ export function useTakenBids(settings: Settings): TakenBidsState {
       try {
         const parsed = parseAnnualBidCsv(s.csv);
         for (const b of parsed.bids) {
-          if (b.takenBy) {
+          // Sleeper teams have multiple takers per bid (A + B drivers); a
+          // regular bid has one. Emit a TakenBid record for every taker so
+          // every driver gets credit for the pick.
+          for (const driver of b.takers) {
             out.push({
               jobNum: b.jobNum,
               bidNum: b.bidNum,
               hub: s.hub,
               kind: "bid",
-              driverRaw: b.takenBy,
-              driverNormalized: normalizeName(b.takenBy),
+              driverRaw: driver,
+              driverNormalized: normalizeName(driver),
             });
           }
         }

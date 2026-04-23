@@ -186,7 +186,20 @@ function canonicalSet(first: string): Set<string> {
 
 export function namesMatch(a: NormalizedName, b: NormalizedName): boolean {
   if (!a.last || !b.last) return false;
-  if (a.last !== b.last) return false;
+  // Last names must match exactly, OR be 1 character apart for typos
+  // ("Flemimg" ↔ "Fleming"). Length-gate this to avoid collapsing short
+  // common names like "Cook" / "Coop".
+  if (a.last !== b.last) {
+    if (
+      Math.min(a.last.length, b.last.length) >= 5 &&
+      Math.abs(a.last.length - b.last.length) <= 1 &&
+      editDistance(a.last, b.last) <= 1
+    ) {
+      // last names are close enough — keep going
+    } else {
+      return false;
+    }
+  }
 
   // Set intersection on first-name canonicals.
   for (const c of a.firstCanonicals) {
