@@ -135,7 +135,7 @@ export function LocationsView({ onStatus }: Props) {
                   Hand-collected addresses, phone numbers and access notes
                   for every UPS feeder location below.{" "}
                   <span className="text-amber-200 font-semibold">
-                    Thanks Bob — we owe you one.
+                    Thanks Robert — we owe you one.
                   </span>
                 </span>
               </div>
