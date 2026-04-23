@@ -194,6 +194,11 @@ html.light .text-sky-300 { color: rgb(2 132 199); }
   from { transform: translateX(-100%); }
   to   { transform: translateX(100%); }
 }
+@keyframes hourglassFlip {
+  0%, 40% { transform: rotate(0deg); }
+  50%     { transform: rotate(180deg); }
+  90%, 100% { transform: rotate(180deg); }
+}
 
 @layer components {
   .pill {

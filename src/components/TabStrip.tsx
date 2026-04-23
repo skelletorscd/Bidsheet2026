@@ -2,6 +2,7 @@ import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
   Building2,
+  Hourglass,
   ListOrdered,
   Mail,
   MapPin,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 
 const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
+  nowBidding: Hourglass,
   toledo: Building2,
   northBaltimore: Building2,
   sleeper: Users,

@@ -1,4 +1,5 @@
 export type TabKey =
+  | "nowBidding"
   | "toledo"
   | "northBaltimore"
   | "sleeper"
@@ -21,12 +22,21 @@ export type TabSource = {
     | "bidTimes"
     | "onCall"
     | "locations"
-    | "contact";
+    | "contact"
+    | "nowBidding";
 };
 
 export const DEFAULT_SPREADSHEET_ID = "1sIu6_ndtJRlmz-1gRRRBCudsLezPPJ0U";
 
 export const TAB_SOURCES: TabSource[] = [
+  {
+    key: "nowBidding",
+    label: "Up to Bid",
+    shortLabel: "Up to Bid",
+    hub: null,
+    gid: null,
+    kind: "nowBidding",
+  },
   {
     key: "toledo",
     label: "Toledo Annual",

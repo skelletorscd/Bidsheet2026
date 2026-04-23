@@ -14,6 +14,7 @@ import { useBidTakenToasts } from "./data/useBidTakenToasts";
 import { useGlobalCounts } from "./data/useGlobalCounts";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
+import { NowBiddingView } from "./views/NowBiddingView";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -31,13 +32,13 @@ import {
 
 export default function App() {
   const [params, setParams] = useSearchParams();
-  const tabKey = (params.get("tab") as TabKey) || "toledo";
+  const tabKey = (params.get("tab") as TabKey) || "nowBidding";
   const tab = TAB_SOURCES.find((t) => t.key === tabKey) ?? TAB_SOURCES[0];
 
   useEffect(() => {
     if (!params.get("tab")) {
       const next = new URLSearchParams(params);
-      next.set("tab", "toledo");
+      next.set("tab", "nowBidding");
       setParams(next, { replace: true });
     }
   }, [params, setParams]);
@@ -187,6 +188,13 @@ export default function App() {
         )}
         {tab.kind === "contact" && (
           <ContactView key={childKey} onStatus={reportStatus} />
+        )}
+        {tab.kind === "nowBidding" && (
+          <NowBiddingView
+            key={childKey}
+            settings={settings}
+            onStatus={reportStatus}
+          />
         )}
       </div>
 
