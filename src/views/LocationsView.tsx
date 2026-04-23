@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Building2, Navigation, Phone, Plane, Search, TrafficCone } from "lucide-react";
+import {
+  Award,
+  Building2,
+  Navigation,
+  Phone,
+  Plane,
+  Search,
+  TrafficCone,
+  Truck,
+} from "lucide-react";
 import {
   DIRECTORY,
   mapsDirectionsUrl,
@@ -82,6 +91,58 @@ export function LocationsView({ onStatus }: Props) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-5xl mx-auto">
+        {/* ─── Robert Hodge credit banner ──────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-bg-panel mb-5">
+          <div
+            className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300/90 to-transparent"
+            style={{ animation: "shimmer 3s linear infinite" }}
+          />
+          <div
+            className="absolute -top-20 -right-16 w-64 h-64 rounded-full opacity-25"
+            style={{
+              background:
+                "radial-gradient(closest-side, rgba(245,158,11,0.7), transparent 70%)",
+              animation: "pulseDot 5s ease-in-out infinite",
+            }}
+          />
+          <div className="relative p-5 sm:p-6 flex items-center gap-4 sm:gap-5">
+            <div className="relative shrink-0">
+              <div
+                className="absolute inset-0 rounded-2xl blur-xl"
+                style={{
+                  background:
+                    "radial-gradient(closest-side, rgba(245,158,11,0.55), transparent 70%)",
+                  animation: "pulseDot 4s ease-in-out infinite",
+                }}
+              />
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500/20 border-2 border-amber-400/60 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.35)]">
+                <Award className="w-7 h-7 sm:w-8 sm:h-8 text-amber-300" />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-[0.35em] text-amber-300/80 font-bold">
+                Locations provided by
+              </div>
+              <div
+                className="font-extrabold text-2xl sm:text-3xl text-slate-50 mt-0.5 leading-tight tracking-tight drop-shadow-[0_0_18px_rgba(245,158,11,0.35)]"
+                style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+              >
+                Robert Hodge
+              </div>
+              <div className="text-[12px] sm:text-sm text-slate-300 mt-1 flex items-center gap-1.5 flex-wrap">
+                <Truck className="w-3.5 h-3.5 text-amber-400" />
+                <span>
+                  Hand-collected addresses, phone numbers and access notes
+                  for every UPS feeder location below.{" "}
+                  <span className="text-amber-200 font-semibold">
+                    Thanks Bob — we owe you one.
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-baseline justify-between flex-wrap gap-3 mb-4">
           <div>
             <h1 className="text-xl font-semibold text-slate-100">
