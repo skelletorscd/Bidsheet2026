@@ -57,24 +57,56 @@ export function NowBiddingView({ settings, onStatus }: Props) {
   const takenBids = useTakenBids(settings);
   const timings = useBidTimings(takenBids.taken);
 
-  // The "current bidder" is the first scheduled driver (rank > 4) who hasn't
-  // taken a bid AND isn't on the on-call list. Drivers in the unscheduled
-  // top group (ranks 1-4) don't show up — they aren't on the call.
-  const { current, onDeck } = useMemo(() => {
-    const out: { current: BidTimesRow | null; onDeck: BidTimesRow[] } = {
+  // The bid call moves strictly down the seniority list. The high-water mark
+  // is the latest rank we've actually seen pick something — anyone with a
+  // lower rank who's still showing 'pending' was passed / absent / on
+  // vacation, not literally up to bid right now. So the current bidder is
+  // the first pending driver above that high-water mark; anything before it
+  // is grouped as "passed" so it doesn't pollute the on-deck queue.
+  const { current, onDeck, passedBefore, allDone, highWaterRank } = useMemo(() => {
+    const result: {
+      current: BidTimesRow | null;
+      onDeck: BidTimesRow[];
+      passedBefore: BidTimesRow[];
+      allDone: boolean;
+      highWaterRank: number;
+    } = {
       current: null,
       onDeck: [],
+      passedBefore: [],
+      allDone: false,
+      highWaterRank: UNSCHEDULED_TOP,
     };
+
+    let highWater = UNSCHEDULED_TOP;
+    for (const row of rows) {
+      if (takenBids.lookup(row.name) && row.rank > highWater) {
+        highWater = row.rank;
+      }
+    }
+    result.highWaterRank = highWater;
+
+    let foundCurrent = false;
+    let pendingAfter = 0;
     for (const row of rows) {
       if (row.rank <= UNSCHEDULED_TOP) continue;
       const picked = takenBids.lookup(row.name);
-      if (!picked) {
-        if (!out.current) out.current = row;
-        else if (out.onDeck.length < 3) out.onDeck.push(row);
-        else break;
+      if (picked) continue;
+      if (row.rank <= highWater) {
+        // Pending but already passed in the call order.
+        result.passedBefore.push(row);
+        continue;
       }
+      if (!foundCurrent) {
+        result.current = row;
+        foundCurrent = true;
+      } else if (result.onDeck.length < 3) {
+        result.onDeck.push(row);
+      }
+      pendingAfter++;
     }
-    return out;
+    if (!foundCurrent && pendingAfter === 0) result.allDone = true;
+    return result;
   }, [rows, takenBids]);
 
   const elapsedSinceLast = timings.lastPickAt
@@ -104,6 +136,8 @@ export function NowBiddingView({ settings, onStatus }: Props) {
           elapsedMs={elapsedSinceLast}
           avgMs={avgMs}
           totalPicks={timings.history.length}
+          allDone={allDone}
+          highWaterRank={highWaterRank}
         />
 
         {/* Stats strip */}
@@ -126,9 +160,50 @@ export function NowBiddingView({ settings, onStatus }: Props) {
           />
           <StatTile
             label="Drivers awaiting call"
-            value={`${rows.filter((r) => r.rank > UNSCHEDULED_TOP && !takenBids.lookup(r.name)).length}`}
+            value={`${rows.filter((r) => r.rank > highWaterRank && !takenBids.lookup(r.name)).length}`}
           />
         </div>
+
+        {/* Passed-before — drivers earlier in the call who never got marked
+            with a pick. Could be on vacation, off-roster, or just data lag.
+            Collapsed by default; expanded to a compact list. */}
+        {passedBefore.length > 0 && (
+          <details className="card p-4 group">
+            <summary className="cursor-pointer flex items-center justify-between gap-2 list-none">
+              <h3 className="text-xs uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <span className="text-amber-400">⚠</span>
+                {passedBefore.length} earlier driver
+                {passedBefore.length === 1 ? "" : "s"} passed / absent
+              </h3>
+              <span className="text-[11px] text-slate-500 group-open:hidden">
+                show
+              </span>
+              <span className="text-[11px] text-slate-500 hidden group-open:inline">
+                hide
+              </span>
+            </summary>
+            <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+              The bid call has moved past these ranks (a higher seniority
+              driver has already picked). They're typically on vacation or
+              didn't take a bid.
+            </p>
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1 text-[12px]">
+              {passedBefore.map((r) => (
+                <li
+                  key={r.rank}
+                  className="flex items-center gap-2 px-2 py-1 rounded hover:bg-bg-hover"
+                >
+                  <span className="tabular w-8 text-right text-slate-500 font-semibold">
+                    {r.rank}
+                  </span>
+                  <span className="flex-1 text-slate-300 truncate">
+                    {r.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
 
         {/* On-deck */}
         {onDeck.length > 0 && (
@@ -191,11 +266,15 @@ function CurrentBidderCard({
   elapsedMs,
   avgMs,
   totalPicks,
+  allDone,
+  highWaterRank,
 }: {
   current: BidTimesRow | null;
   elapsedMs: number | null;
   avgMs: number | null;
   totalPicks: number;
+  allDone: boolean;
+  highWaterRank: number;
 }) {
   const callWindow = current?.callWindow
     ? formatCallWindow(current.callWindow)
@@ -247,9 +326,11 @@ function CurrentBidderCard({
               </>
             ) : (
               <div className="font-bold text-xl text-slate-300 mt-0.5">
-                {totalPicks > 0
+                {allDone
                   ? "All scheduled drivers have picked"
-                  : "Waiting for the first pick…"}
+                  : totalPicks > 0
+                    ? `Last pick was rank #${highWaterRank} — waiting for the next driver`
+                    : "Waiting for the first pick…"}
               </div>
             )}
           </div>
