@@ -200,6 +200,102 @@ html.light .text-sky-300 { color: rgb(2 132 199); }
   90%, 100% { transform: rotate(180deg); }
 }
 
+/* Lightning */
+@keyframes lightningFlash {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  35%  { opacity: 0.2; }
+  45%  { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+@keyframes lightningBolt {
+  0%   { opacity: 0; transform: translateY(-200px) scale(0.6); }
+  20%  { opacity: 1; transform: translateY(0) scale(1); }
+  50%  { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0.4; transform: translateY(0) scale(1); }
+}
+
+/* Trophy */
+@keyframes trophyRise {
+  0%   { transform: translateY(60vh) rotate(-10deg) scale(0.6); opacity: 0; }
+  60%  { transform: translateY(-10px) rotate(4deg) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+}
+
+/* Confetti */
+@keyframes confettiBurst {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% {
+    transform:
+      translate(var(--dx, 0), var(--dy, 0))
+      rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Disco ball */
+@keyframes discoSwing {
+  0%, 100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg); }
+}
+@keyframes discoSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Boxing KO */
+@keyframes punchIn {
+  0%   { transform: translate(-80vw, 30vh) rotate(-30deg) scale(2); opacity: 0; }
+  60%  { transform: translate(0, 0) rotate(0) scale(1.4); opacity: 1; }
+  85%  { transform: translate(0, 0) rotate(0) scale(0.95); }
+  100% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+}
+@keyframes koShatter {
+  0%   { transform: scale(4) rotate(-12deg); opacity: 0; letter-spacing: 1.5em; }
+  60%  { transform: scale(0.95) rotate(-3deg); opacity: 1; letter-spacing: 0.1em; }
+  100% { transform: scale(1) rotate(0); opacity: 1; letter-spacing: 0.15em; }
+}
+
+/* Lions roar */
+@keyframes lionCharge {
+  0%   { transform: translateY(40vh) scale(0.4); opacity: 0; }
+  60%  { transform: translateY(-15px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes lionShake {
+  0%, 100% { transform: rotate(-3deg); }
+  50%      { transform: rotate(3deg); }
+}
+@keyframes lionLeap {
+  0%   { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
+  35%  { transform: translate(-30vw, -10vh) scale(1.05) rotate(-8deg); opacity: 1; }
+  100% { transform: translate(120vw, -90vh) scale(0.6) rotate(-25deg); opacity: 0; }
+}
+
+/* Claw machine */
+@keyframes clawDescend {
+  0%   { transform: translate(-50%, 0); }
+  100% { transform: translate(-50%, 200px); }
+}
+@keyframes clawAscend {
+  0%   { transform: translate(-50%, 200px); }
+  60%  { transform: translate(-50%, -10px); }
+  100% { transform: translate(-50%, 0); }
+}
+@keyframes clawGrab {
+  0%   { transform: scale(0.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes duckyAppear {
+  0%   { transform: translateY(40px) scale(0.4); opacity: 0; }
+  60%  { transform: translateY(-10px) scale(1.15); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes duckyBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-6px) rotate(2deg); }
+}
+
 @layer components {
   .pill {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium tracking-wide uppercase;

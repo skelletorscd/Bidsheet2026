@@ -29,6 +29,8 @@ import {
   resolveTheme,
   Theme,
 } from "./data/theme";
+import { loadSoundOn, saveSoundOn } from "./data/sound-pref";
+import { primeAudio, setSoundMuted } from "./util/sounds";
 
 export default function App() {
   const [params, setParams] = useSearchParams();
@@ -48,8 +50,40 @@ export default function App() {
     () => loadLocations(),
   );
   const [theme, setTheme] = useState<Theme>(() => loadTheme());
+  const [soundOn, setSoundOn] = useState<boolean>(() => loadSoundOn());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+
+  // Push the sound preference into the audio system; persist to localStorage.
+  useEffect(() => {
+    setSoundMuted(!soundOn);
+    saveSoundOn(soundOn);
+  }, [soundOn]);
+
+  // Browsers block AudioContext until a user gesture. Prime it on the first
+  // pointer/key event so the very first celebration can play sound.
+  useEffect(() => {
+    const prime = () => {
+      primeAudio();
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+    window.addEventListener("pointerdown", prime);
+    window.addEventListener("keydown", prime);
+    return () => {
+      window.removeEventListener("pointerdown", prime);
+      window.removeEventListener("keydown", prime);
+    };
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((on) => {
+      const next = !on;
+      // Toggling sound on counts as a user gesture — safe to prime now.
+      if (next) primeAudio();
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     applyTheme(theme);
@@ -142,6 +176,8 @@ export default function App() {
         source={globalSource}
         theme={theme}
         resolvedTheme={resolvedTheme}
+        soundOn={soundOn}
+        onToggleSound={toggleSound}
         onCycleTheme={cycleTheme}
         onRefresh={() => setRefreshTick((t) => t + 1)}
         onOpenSettings={() => setSettingsOpen(true)}

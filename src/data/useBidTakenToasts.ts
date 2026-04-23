@@ -1,5 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { TakenBid } from "./useTakenBids";
+import {
+  CLAW_VARIANT,
+  LIONS_VARIANT,
+  TOTAL_RANDOM_VARIANTS,
+} from "../components/BidCelebration";
+import { namesMatch, normalizeName } from "../parse/names";
+
+/** Drivers who get a custom celebration regardless of randomness. */
+const SPECIAL_VARIANTS: { matchName: string; variant: number; repeat: number }[] = [
+  { matchName: "Steven Wicker", variant: CLAW_VARIANT, repeat: 3 },
+  { matchName: "Joseph Devos", variant: LIONS_VARIANT, repeat: 1 },
+];
 
 export type BidTakenToast = {
   id: string;
@@ -42,16 +54,39 @@ export function useBidTakenToasts(
 
     if (newlyTaken.length > 0) {
       const now = Date.now();
-      const newToasts: BidTakenToast[] = newlyTaken.map((t, i) => ({
-        id: `${now}-${i}-${t.jobNum}`,
-        jobNum: t.jobNum,
-        bidNum: t.bidNum,
-        hub: t.hub,
-        driver: t.driverRaw,
-        createdAt: now,
-        variant: Math.floor(Math.random() * 5),
-      }));
-      setToasts((prev) => [...prev, ...newToasts].slice(-6));
+      const newToasts: BidTakenToast[] = [];
+      let counter = 0;
+      for (const t of newlyTaken) {
+        // Check for a forced special-driver variant first.
+        const driverNorm = normalizeName(t.driverRaw);
+        const special = SPECIAL_VARIANTS.find((s) =>
+          namesMatch(normalizeName(s.matchName), driverNorm),
+        );
+        if (special) {
+          for (let r = 0; r < special.repeat; r++) {
+            newToasts.push({
+              id: `${now}-${counter++}-${t.jobNum}-claw${r}`,
+              jobNum: t.jobNum,
+              bidNum: t.bidNum,
+              hub: t.hub,
+              driver: t.driverRaw,
+              createdAt: now,
+              variant: special.variant,
+            });
+          }
+        } else {
+          newToasts.push({
+            id: `${now}-${counter++}-${t.jobNum}`,
+            jobNum: t.jobNum,
+            bidNum: t.bidNum,
+            hub: t.hub,
+            driver: t.driverRaw,
+            createdAt: now,
+            variant: Math.floor(Math.random() * TOTAL_RANDOM_VARIANTS),
+          });
+        }
+      }
+      setToasts((prev) => [...prev, ...newToasts].slice(-12));
     }
 
     previousKeysRef.current = currentKeys;
