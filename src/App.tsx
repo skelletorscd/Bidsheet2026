@@ -4,13 +4,8 @@ import { TopBar } from "./components/TopBar";
 import { TabStrip } from "./components/TabStrip";
 import { SettingsModal } from "./components/SettingsModal";
 import { AnnualBidView } from "./views/AnnualBidView";
-import { CelebrationStack } from "./components/CelebrationStack";
 import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
-import { ScheduledReplayBanner } from "./components/ScheduledReplayBanner";
-import { useTakenBids } from "./data/useTakenBids";
-import { useBidTakenToasts } from "./data/useBidTakenToasts";
 import { useGlobalCounts } from "./data/useGlobalCounts";
-import { useScheduledCelebration } from "./data/useScheduledCelebration";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
 import { DashboardView } from "./views/DashboardView";
@@ -30,8 +25,6 @@ import {
   resolveTheme,
   Theme,
 } from "./data/theme";
-import { loadSoundOn, saveSoundOn } from "./data/sound-pref";
-import { primeAudio, setSoundMuted } from "./util/sounds";
 
 export default function App() {
   const [params, setParams] = useSearchParams();
@@ -51,40 +44,8 @@ export default function App() {
     () => loadLocations(),
   );
   const [theme, setTheme] = useState<Theme>(() => loadTheme());
-  const [soundOn, setSoundOn] = useState<boolean>(() => loadSoundOn());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
-
-  // Push the sound preference into the audio system; persist to localStorage.
-  useEffect(() => {
-    setSoundMuted(!soundOn);
-    saveSoundOn(soundOn);
-  }, [soundOn]);
-
-  // Browsers block AudioContext until a user gesture. Prime it on the first
-  // pointer/key event so the very first celebration can play sound.
-  useEffect(() => {
-    const prime = () => {
-      primeAudio();
-      window.removeEventListener("pointerdown", prime);
-      window.removeEventListener("keydown", prime);
-    };
-    window.addEventListener("pointerdown", prime);
-    window.addEventListener("keydown", prime);
-    return () => {
-      window.removeEventListener("pointerdown", prime);
-      window.removeEventListener("keydown", prime);
-    };
-  }, []);
-
-  const toggleSound = useCallback(() => {
-    setSoundOn((on) => {
-      const next = !on;
-      // Toggling sound on counts as a user gesture — safe to prime now.
-      if (next) primeAudio();
-      return next;
-    });
-  }, []);
 
   useEffect(() => {
     applyTheme(theme);
@@ -106,25 +67,8 @@ export default function App() {
 
   const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
 
-  const takenBids = useTakenBids(settings);
-  const { toasts, dismiss: dismissToast } = useBidTakenToasts(
-    takenBids.taken,
-    takenBids.loading,
-  );
   const globalCounts = useGlobalCounts(settings);
-  const replay = useScheduledCelebration(settings);
 
-  // Merge any scheduled-replay toasts into the celebration queue.
-  const allToasts = useMemo(
-    () => [...toasts, ...replay.newToasts],
-    [toasts, replay.newToasts],
-  );
-  useEffect(() => {
-    if (replay.newToasts.length > 0) replay.consume();
-  }, [replay]);
-
-  // `locations` already merges the baked directory (via SEED_LOCATIONS in
-  // loadLocations) with any user overrides in localStorage.
   const mergedLocations = locations;
 
   const handleSaveSettings = useCallback((s: Settings) => {
@@ -151,8 +95,6 @@ export default function App() {
     [],
   );
 
-  // Top-bar status reflects the currently visible tab. We re-trigger fetch by
-  // changing the key on the inner view so a click on Refresh remounts useCsv.
   const [globalFetchedAt, setGlobalFetchedAt] = useState<number | null>(null);
   const [globalLoading, setGlobalLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -187,13 +129,10 @@ export default function App() {
         source={globalSource}
         theme={theme}
         resolvedTheme={resolvedTheme}
-        soundOn={soundOn}
-        onToggleSound={toggleSound}
         onCycleTheme={cycleTheme}
         onRefresh={() => setRefreshTick((t) => t + 1)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
-      <ScheduledReplayBanner scheduled={replay.scheduled} />
       <GlobalCountsStrip counts={globalCounts} />
       <TabStrip />
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -230,8 +169,6 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
-
-      <CelebrationStack toasts={allToasts} onDismiss={dismissToast} />
     </div>
   );
 }

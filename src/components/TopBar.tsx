@@ -1,4 +1,4 @@
-import { Monitor, Moon, RefreshCw, Settings, Sun, Truck, Volume2, VolumeX } from "lucide-react";
+import { Monitor, Moon, RefreshCw, Settings, Sun, Truck } from "lucide-react";
 import { StatusDot } from "./StatusDot";
 import { formatRelative } from "../util/format";
 import { Theme } from "../data/theme";
@@ -10,8 +10,6 @@ type Props = {
   source: string | null;
   theme: Theme;
   resolvedTheme: "dark" | "light";
-  soundOn: boolean;
-  onToggleSound: () => void;
   onCycleTheme: () => void;
   onRefresh: () => void;
   onOpenSettings: () => void;
@@ -24,8 +22,6 @@ export function TopBar({
   source,
   theme,
   resolvedTheme,
-  soundOn,
-  onToggleSound,
   onCycleTheme,
   onRefresh,
   onOpenSettings,
@@ -84,20 +80,6 @@ export function TopBar({
             className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
           />
           <span className="hidden sm:inline">Refresh</span>
-        </button>
-
-        <button
-          className="btn"
-          onClick={onToggleSound}
-          title={soundOn ? "Mute celebration sounds" : "Unmute celebration sounds"}
-          aria-label={soundOn ? "Mute" : "Unmute"}
-          aria-pressed={!soundOn}
-        >
-          {soundOn ? (
-            <Volume2 className="w-4 h-4 text-amber-300" />
-          ) : (
-            <VolumeX className="w-4 h-4 text-slate-500" />
-          )}
         </button>
 
         <button
