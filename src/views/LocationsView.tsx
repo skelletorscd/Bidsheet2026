@@ -8,6 +8,7 @@ import {
   Search,
   TrafficCone,
   Truck,
+  X,
 } from "lucide-react";
 import {
   DIRECTORY,
@@ -143,27 +144,37 @@ export function LocationsView({ onStatus }: Props) {
           </div>
         </div>
 
-        <div className="flex items-baseline justify-between flex-wrap gap-3 mb-4">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-100">
-              Location directory
-            </h1>
-            <p className="text-sm text-slate-400 mt-0.5">
-              {DIRECTORY.length} facilities — tap an address for turn-by-turn
-              GPS.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-              <input
-                className="input pl-8 w-48 sm:w-56"
-                placeholder="Search city, code, SLIC…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
+        <div className="mb-4">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-100">
+            Location directory
+          </h1>
+          <p className="text-sm text-slate-400 mt-0.5">
+            {DIRECTORY.length} UPS facilities — tap any address for turn-by-turn
+            GPS, or tap a phone number to call.
+          </p>
+        </div>
+
+        {/* ─── Prominent hero search ────────────────────────────────── */}
+        <div className="relative mb-3">
+          <Search className="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none" />
+          <input
+            className="w-full bg-bg-panel border-2 border-border rounded-2xl pl-14 pr-12 py-4 text-base sm:text-lg text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/20 transition-all shadow-[0_0_30px_rgba(245,158,11,0.08)]"
+            placeholder="Search city, code, SLIC, address…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:bg-bg-hover hover:text-slate-200"
+              aria-label="Clear search"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        <div className="text-[11px] text-slate-500 mb-4 tabular">
+          {filtered.length} of {DIRECTORY.length} shown
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 mb-4">

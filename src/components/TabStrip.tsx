@@ -2,31 +2,28 @@ import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
   Building2,
-  Hourglass,
-  ListOrdered,
+  Home,
   Mail,
   MapPin,
-  Phone,
-  Clock,
+  ScrollText,
+  Truck,
   Users,
 } from "lucide-react";
 
 const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
-  nowBidding: Hourglass,
+  dashboard: Home,
   toledo: Building2,
   northBaltimore: Building2,
-  sleeper: Users,
-  seniority: ListOrdered,
-  oncallToloh: Phone,
-  oncallNbloh: Phone,
-  bidTimes: Clock,
+  sleeper: Truck,
+  roster: Users,
+  bidSheets: ScrollText,
   locations: MapPin,
   contact: Mail,
 };
 
 export function TabStrip() {
   const [params] = useSearchParams();
-  const current = (params.get("tab") as TabKey) || "toledo";
+  const current = (params.get("tab") as TabKey) || "dashboard";
 
   return (
     <nav className="bg-bg-panel border-b border-border-subtle">

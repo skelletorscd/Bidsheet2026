@@ -4,9 +4,6 @@ import { TopBar } from "./components/TopBar";
 import { TabStrip } from "./components/TabStrip";
 import { SettingsModal } from "./components/SettingsModal";
 import { AnnualBidView } from "./views/AnnualBidView";
-import { SeniorityView } from "./views/SeniorityView";
-import { BidTimesView } from "./views/BidTimesView";
-import { OnCallView } from "./views/OnCallView";
 import { CelebrationStack } from "./components/CelebrationStack";
 import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
 import { ScheduledReplayBanner } from "./components/ScheduledReplayBanner";
@@ -16,7 +13,9 @@ import { useGlobalCounts } from "./data/useGlobalCounts";
 import { useScheduledCelebration } from "./data/useScheduledCelebration";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
-import { NowBiddingView } from "./views/NowBiddingView";
+import { DashboardView } from "./views/DashboardView";
+import { RosterView } from "./views/RosterView";
+import { BidSheetsView } from "./views/BidSheetsView";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -36,13 +35,13 @@ import { primeAudio, setSoundMuted } from "./util/sounds";
 
 export default function App() {
   const [params, setParams] = useSearchParams();
-  const tabKey = (params.get("tab") as TabKey) || "nowBidding";
+  const tabKey = (params.get("tab") as TabKey) || "dashboard";
   const tab = TAB_SOURCES.find((t) => t.key === tabKey) ?? TAB_SOURCES[0];
 
   useEffect(() => {
     if (!params.get("tab")) {
       const next = new URLSearchParams(params);
-      next.set("tab", "nowBidding");
+      next.set("tab", "dashboard");
       setParams(next, { replace: true });
     }
   }, [params, setParams]);
@@ -198,6 +197,9 @@ export default function App() {
       <GlobalCountsStrip counts={globalCounts} />
       <TabStrip />
       <div className="flex-1 flex flex-col overflow-hidden">
+        {tab.kind === "dashboard" && (
+          <DashboardView key={childKey} onStatus={reportStatus} />
+        )}
         {tab.kind === "annualBid" && (
           <AnnualBidView
             key={childKey}
@@ -208,42 +210,17 @@ export default function App() {
             onStatus={reportStatus}
           />
         )}
-        {tab.kind === "seniority" && (
-          <SeniorityView
-            key={childKey}
-            tab={tab}
-            settings={settings}
-            onStatus={reportStatus}
-          />
+        {tab.kind === "roster" && (
+          <RosterView key={childKey} onStatus={reportStatus} />
         )}
-        {tab.kind === "bidTimes" && (
-          <BidTimesView
-            key={childKey}
-            tab={tab}
-            settings={settings}
-            onStatus={reportStatus}
-          />
-        )}
-        {tab.kind === "onCall" && (
-          <OnCallView
-            key={childKey}
-            tab={tab}
-            settings={settings}
-            onStatus={reportStatus}
-          />
+        {tab.kind === "bidSheets" && (
+          <BidSheetsView key={childKey} onStatus={reportStatus} />
         )}
         {tab.kind === "locations" && (
           <LocationsView key={childKey} onStatus={reportStatus} />
         )}
         {tab.kind === "contact" && (
           <ContactView key={childKey} onStatus={reportStatus} />
-        )}
-        {tab.kind === "nowBidding" && (
-          <NowBiddingView
-            key={childKey}
-            settings={settings}
-            onStatus={reportStatus}
-          />
         )}
       </div>
 

@@ -29,18 +29,22 @@ export function useTakenBids(settings: Settings): TakenBidsState {
   const toledoTab = TAB_SOURCES.find((t) => t.key === "toledo")!;
   const nblohTab = TAB_SOURCES.find((t) => t.key === "northBaltimore")!;
   const sleeperTab = TAB_SOURCES.find((t) => t.key === "sleeper")!;
-  const onCallTolTab = TAB_SOURCES.find((t) => t.key === "oncallToloh")!;
-  const onCallNblTab = TAB_SOURCES.find((t) => t.key === "oncallNbloh")!;
+  // Placeholder refs so the void-call below still has a target.
+  const onCallTolTab = null as unknown as typeof toledoTab;
+  const onCallNblTab = null as unknown as typeof toledoTab;
 
   const toledoGid =
     settings.customGids[toledoTab.key] ?? toledoTab.gid ?? null;
   const nblohGid = settings.customGids[nblohTab.key] ?? nblohTab.gid ?? null;
   const sleeperGid =
     settings.customGids[sleeperTab.key] ?? sleeperTab.gid ?? null;
-  const onCallTolGid =
-    settings.customGids[onCallTolTab.key] ?? onCallTolTab.gid ?? null;
-  const onCallNblGid =
-    settings.customGids[onCallNblTab.key] ?? onCallNblTab.gid ?? null;
+  // On-call gids aren't in the new tab registry — the roster page reads
+  // on-call data from the snapshots directly. Pass the raw gids through
+  // useCsv which also reads from snapshots.
+  const onCallTolGid = 1076391541;
+  const onCallNblGid = 1257999271;
+  void onCallTolTab;
+  void onCallNblTab;
 
   const toledoCsv = useCsv(
     settings.spreadsheetId,

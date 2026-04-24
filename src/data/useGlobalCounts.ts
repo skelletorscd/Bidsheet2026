@@ -34,13 +34,12 @@ export function useGlobalCounts(settings: Settings): GlobalCounts {
   const byKey = Object.fromEntries(TAB_SOURCES.map((t) => [t.key, t]));
 
   const toledoGid =
-    settings.customGids["toledo"] ?? byKey.toledo.gid ?? null;
+    settings.customGids["toledo"] ?? byKey.toledo?.gid ?? null;
   const nblohGid =
-    settings.customGids["northBaltimore"] ?? byKey.northBaltimore.gid ?? null;
-  const onCallTolGid =
-    settings.customGids["oncallToloh"] ?? byKey.oncallToloh.gid ?? null;
-  const onCallNblGid =
-    settings.customGids["oncallNbloh"] ?? byKey.oncallNbloh.gid ?? null;
+    settings.customGids["northBaltimore"] ?? byKey.northBaltimore?.gid ?? null;
+  // On-call gids are no longer tab keys; they're read directly from snapshots.
+  const onCallTolGid = 1076391541;
+  const onCallNblGid = 1257999271;
 
   const toledoCsv = useCsv(
     settings.spreadsheetId,

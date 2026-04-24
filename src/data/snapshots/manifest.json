@@ -1,0 +1,55 @@
+{
+  "spreadsheetId": "1sIu6_ndtJRlmz-1gRRRBCudsLezPPJ0U",
+  "capturedAt": "2026-04-24T16:34:06.796Z",
+  "sheets": [
+    {
+      "key": "toloh",
+      "label": "Toledo Annual Bid",
+      "gid": 1758902346,
+      "bytes": 11717,
+      "lines": 284
+    },
+    {
+      "key": "nbloh",
+      "label": "North Baltimore Annual Bid",
+      "gid": 1635180906,
+      "bytes": 11890,
+      "lines": 289
+    },
+    {
+      "key": "sleeper",
+      "label": "Sleeper Team Bid",
+      "gid": 1077520417,
+      "bytes": 950,
+      "lines": 9
+    },
+    {
+      "key": "seniority",
+      "label": "Seniority",
+      "gid": 2137587180,
+      "bytes": 9335,
+      "lines": 271
+    },
+    {
+      "key": "bidTimes",
+      "label": "Bid Times",
+      "gid": 1262154739,
+      "bytes": 16433,
+      "lines": 270
+    },
+    {
+      "key": "onCallToledo",
+      "label": "On-Call Toledo",
+      "gid": 1076391541,
+      "bytes": 897,
+      "lines": 52
+    },
+    {
+      "key": "onCallNbloh",
+      "label": "On-Call N. Baltimore",
+      "gid": 1257999271,
+      "bytes": 921,
+      "lines": 52
+    }
+  ]
+}

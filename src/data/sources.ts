@@ -1,12 +1,10 @@
 export type TabKey =
-  | "nowBidding"
+  | "dashboard"
   | "toledo"
   | "northBaltimore"
   | "sleeper"
-  | "seniority"
-  | "oncallToloh"
-  | "oncallNbloh"
-  | "bidTimes"
+  | "roster"
+  | "bidSheets"
   | "locations"
   | "contact";
 
@@ -17,29 +15,28 @@ export type TabSource = {
   hub: "TOL" | "NBL" | "ALL" | null;
   gid: number | null;
   kind:
+    | "dashboard"
     | "annualBid"
-    | "seniority"
-    | "bidTimes"
-    | "onCall"
+    | "roster"
+    | "bidSheets"
     | "locations"
-    | "contact"
-    | "nowBidding";
+    | "contact";
 };
 
 export const DEFAULT_SPREADSHEET_ID = "1sIu6_ndtJRlmz-1gRRRBCudsLezPPJ0U";
 
 export const TAB_SOURCES: TabSource[] = [
   {
-    key: "nowBidding",
-    label: "Up to Bid",
-    shortLabel: "Up to Bid",
+    key: "dashboard",
+    label: "Dashboard",
+    shortLabel: "Home",
     hub: null,
     gid: null,
-    kind: "nowBidding",
+    kind: "dashboard",
   },
   {
     key: "toledo",
-    label: "Toledo Annual",
+    label: "Toledo",
     shortLabel: "Toledo",
     hub: "TOL",
     gid: 1758902346,
@@ -47,7 +44,7 @@ export const TAB_SOURCES: TabSource[] = [
   },
   {
     key: "northBaltimore",
-    label: "North Baltimore Annual",
+    label: "North Baltimore",
     shortLabel: "N. Baltimore",
     hub: "NBL",
     gid: 1635180906,
@@ -55,43 +52,27 @@ export const TAB_SOURCES: TabSource[] = [
   },
   {
     key: "sleeper",
-    label: "Sleeper Team",
+    label: "Sleeper",
     shortLabel: "Sleeper",
     hub: "ALL",
     gid: 1077520417,
     kind: "annualBid",
   },
   {
-    key: "seniority",
-    label: "Seniority",
-    shortLabel: "Seniority",
+    key: "roster",
+    label: "Roster",
+    shortLabel: "Roster",
     hub: null,
-    gid: 2137587180,
-    kind: "seniority",
+    gid: null,
+    kind: "roster",
   },
   {
-    key: "oncallToloh",
-    label: "On-Call Toledo",
-    shortLabel: "On-Call TOL",
-    hub: "TOL",
-    gid: 1076391541,
-    kind: "onCall",
-  },
-  {
-    key: "oncallNbloh",
-    label: "On-Call N. Baltimore",
-    shortLabel: "On-Call NBL",
-    hub: "NBL",
-    gid: 1257999271,
-    kind: "onCall",
-  },
-  {
-    key: "bidTimes",
-    label: "Bid Times",
-    shortLabel: "Bid Times",
+    key: "bidSheets",
+    label: "Bid Sheets",
+    shortLabel: "Sheets",
     hub: null,
-    gid: 1262154739,
-    kind: "bidTimes",
+    gid: null,
+    kind: "bidSheets",
   },
   {
     key: "locations",
@@ -111,10 +92,10 @@ export const TAB_SOURCES: TabSource[] = [
   },
 ];
 
-export function csvUrl(spreadsheetId: string, gid: number): string {
-  return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+export function csvUrl(_spreadsheetId: string, _gid: number): string {
+  return `https://docs.google.com/spreadsheets/d/${DEFAULT_SPREADSHEET_ID}/htmlview`;
 }
 
 export function corsProxiedUrl(target: string): string {
-  return `https://corsproxy.io/?${encodeURIComponent(target)}`;
+  return target;
 }
