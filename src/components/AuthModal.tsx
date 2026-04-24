@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { AlertCircle, Loader2, LogIn, UserPlus, X } from "lucide-react";
+import {
+  AlertCircle,
+  KeyRound,
+  Loader2,
+  LogIn,
+  Mail,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { getSupabase } from "../data/supabase";
 
 type Props = {
@@ -7,7 +15,7 @@ type Props = {
   onClose: () => void;
 };
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot";
 
 export function AuthModal({ open, onClose }: Props) {
   const [mode, setMode] = useState<Mode>("signin");
@@ -20,15 +28,17 @@ export function AuthModal({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const reset = () => {
     setError(null);
     setMsg(null);
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    reset();
     const sb = getSupabase();
     if (!sb) {
-      setError(
-        "Supabase isn't configured yet. Let Samuel know the site isn't hooked up.",
-      );
+      setError("Supabase isn't configured yet.");
       return;
     }
     setBusy(true);
@@ -37,9 +47,7 @@ export function AuthModal({ open, onClose }: Props) {
         const { data, error: err } = await sb.auth.signUp({
           email: email.trim(),
           password,
-          options: {
-            data: { display_name: displayName.trim() || null },
-          },
+          options: { data: { display_name: displayName.trim() || null } },
         });
         if (err) throw err;
         if (data.session) {
@@ -49,13 +57,28 @@ export function AuthModal({ open, onClose }: Props) {
             "Check your email for a confirmation link, then come back and sign in.",
           );
         }
-      } else {
+      } else if (mode === "signin") {
         const { error: err } = await sb.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
         if (err) throw err;
         onClose();
+      } else {
+        // Forgot password — send recovery email.
+        const { error: err } = await sb.auth.resetPasswordForEmail(
+          email.trim(),
+          {
+            redirectTo:
+              window.location.origin +
+              window.location.pathname +
+              "?recovery=1",
+          },
+        );
+        if (err) throw err;
+        setMsg(
+          "Check your email for a reset link. Open it on this device and you'll be able to set a new password.",
+        );
       }
     } catch (e) {
       setError((e as Error).message || "Something went wrong.");
@@ -63,6 +86,19 @@ export function AuthModal({ open, onClose }: Props) {
       setBusy(false);
     }
   };
+
+  const title =
+    mode === "signin"
+      ? "Sign in"
+      : mode === "signup"
+        ? "Create an account"
+        : "Reset your password";
+  const subtitle =
+    mode === "signin"
+      ? "Welcome back."
+      : mode === "signup"
+        ? "One account per driver."
+        : "We'll email you a link to set a new password.";
 
   return (
     <div
@@ -75,14 +111,8 @@ export function AuthModal({ open, onClose }: Props) {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle">
           <div>
-            <h2 className="text-lg font-semibold">
-              {mode === "signin" ? "Sign in" : "Create an account"}
-            </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {mode === "signin"
-                ? "Welcome back."
-                : "One account per driver."}
-            </p>
+            <h2 className="text-lg font-semibold">{title}</h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>
           </div>
           <button
             className="p-1.5 hover:bg-bg-hover rounded-md text-slate-400"
@@ -121,22 +151,24 @@ export function AuthModal({ open, onClose }: Props) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
-          <label className="block">
-            <span className="text-[11px] uppercase tracking-wider text-slate-500">
-              Password
-            </span>
-            <input
-              className="input w-full mt-1"
-              type="password"
-              required
-              minLength={6}
-              autoComplete={
-                mode === "signup" ? "new-password" : "current-password"
-              }
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
+          {mode !== "forgot" && (
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-wider text-slate-500">
+                Password
+              </span>
+              <input
+                className="input w-full mt-1"
+                type="password"
+                required
+                minLength={6}
+                autoComplete={
+                  mode === "signup" ? "new-password" : "current-password"
+                }
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+          )}
 
           {error && (
             <div className="flex items-start gap-2 text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-md p-2">
@@ -159,43 +191,78 @@ export function AuthModal({ open, onClose }: Props) {
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : mode === "signin" ? (
               <LogIn className="w-4 h-4" />
-            ) : (
+            ) : mode === "signup" ? (
               <UserPlus className="w-4 h-4" />
+            ) : (
+              <Mail className="w-4 h-4" />
             )}
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin"
+              ? "Sign in"
+              : mode === "signup"
+                ? "Create account"
+                : "Email me a reset link"}
           </button>
 
-          <div className="text-center text-xs text-slate-400 pt-2">
-            {mode === "signin" ? (
+          <div className="text-center text-xs text-slate-400 pt-2 space-y-1">
+            {mode === "signin" && (
               <>
-                Don't have an account?{" "}
-                <button
-                  type="button"
-                  className="text-amber-300 hover:underline font-medium"
-                  onClick={() => {
-                    setMode("signup");
-                    setError(null);
-                    setMsg(null);
-                  }}
-                >
-                  Sign up
-                </button>
+                <div>
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    className="text-amber-300 hover:underline font-medium"
+                    onClick={() => {
+                      setMode("signup");
+                      reset();
+                    }}
+                  >
+                    Sign up
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    className="text-slate-400 hover:text-amber-300 inline-flex items-center gap-1"
+                    onClick={() => {
+                      setMode("forgot");
+                      reset();
+                    }}
+                  >
+                    <KeyRound className="w-3 h-3" />
+                    Forgot password?
+                  </button>
+                </div>
               </>
-            ) : (
-              <>
+            )}
+            {mode === "signup" && (
+              <div>
                 Already have an account?{" "}
                 <button
                   type="button"
                   className="text-amber-300 hover:underline font-medium"
                   onClick={() => {
                     setMode("signin");
-                    setError(null);
-                    setMsg(null);
+                    reset();
                   }}
                 >
                   Sign in
                 </button>
-              </>
+              </div>
+            )}
+            {mode === "forgot" && (
+              <div>
+                Remembered it?{" "}
+                <button
+                  type="button"
+                  className="text-amber-300 hover:underline font-medium"
+                  onClick={() => {
+                    setMode("signin");
+                    reset();
+                  }}
+                >
+                  Sign in
+                </button>
+              </div>
             )}
           </div>
         </form>

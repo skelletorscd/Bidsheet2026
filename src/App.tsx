@@ -13,6 +13,8 @@ import { BidSheetsView } from "./views/BidSheetsView";
 import { OnCallHubView } from "./views/OnCallHubView";
 import { AccountView } from "./views/AccountView";
 import { AuthModal } from "./components/AuthModal";
+import { PasswordResetModal } from "./components/PasswordResetModal";
+import { useSession } from "./data/useSession";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -49,6 +51,13 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [resetDone, setResetDone] = useState(false);
+
+  // Detects ?recovery=1 OR a #access_token=... hash dropped in by the
+  // Supabase password-reset email. If PASSWORD_RECOVERY fires we pop a
+  // modal that blocks everything until they pick a new password.
+  const session = useSession();
+  const showReset = session.recoveryMode && !resetDone;
 
   useEffect(() => {
     applyTheme(theme);
@@ -157,6 +166,18 @@ export default function App() {
         onSave={handleSaveSettings}
       />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      {showReset && (
+        <PasswordResetModal
+          onDone={() => {
+            setResetDone(true);
+            // Clean the recovery marker from the URL so reloads don't re-prompt.
+            const url = new URL(window.location.href);
+            url.searchParams.delete("recovery");
+            url.hash = "";
+            window.history.replaceState(null, "", url.toString());
+          }}
+        />
+      )}
     </div>
   );
 }

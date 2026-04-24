@@ -249,7 +249,31 @@ create policy "photos own delete" on storage.objects
   );
 
 -- ─────────────────────────────────────────────────────────────────────────
--- 6. Bootstrap: mark Samuel as the first admin
+-- 6. Realtime replication — pushes row-change events to the client so
+--    the UI (admin panel, claim status, profile) refreshes automatically
+--    when someone else updates something. RLS still applies, so users
+--    only receive events for rows they're allowed to read.
+-- ─────────────────────────────────────────────────────────────────────────
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    begin
+      alter publication supabase_realtime add table public.profiles;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.name_claims;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.driver_status;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.driver_status_events;
+    exception when duplicate_object then null; end;
+  end if;
+end $$;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 7. Bootstrap: mark Samuel as the first admin
 --     Replace the email below if needed. Safe to re-run.
 -- ─────────────────────────────────────────────────────────────────────────
 -- Example (run AFTER you sign up once with this email):

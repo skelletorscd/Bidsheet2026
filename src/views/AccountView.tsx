@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { getSupabase, SUPABASE_CONFIGURED } from "../data/supabase";
 import { Profile, signOut, useSession } from "../data/useSession";
+import { RealtimeChannel } from "@supabase/supabase-js";
 import { ROSTER } from "../data/roster";
 import { namesMatch, normalizeName } from "../parse/names";
 
@@ -327,6 +328,26 @@ function ClaimSection({
 
   useEffect(() => {
     reload();
+    // Subscribe to realtime updates so approval/rejection by an admin
+    // shows up without requiring a page reload.
+    const sb = getSupabase();
+    if (!sb) return;
+    const channel: RealtimeChannel = sb
+      .channel(`claims:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "name_claims",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => reload(),
+      )
+      .subscribe();
+    return () => {
+      sb.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
@@ -529,6 +550,19 @@ function AdminPanel() {
 
   useEffect(() => {
     load();
+    const sb = getSupabase();
+    if (!sb) return;
+    const channel: RealtimeChannel = sb
+      .channel("admin:name_claims")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "name_claims" },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      sb.removeChannel(channel);
+    };
   }, []);
 
   const decide = async (claim: AdminClaim, approve: boolean) => {
