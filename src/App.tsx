@@ -11,6 +11,8 @@ import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
 import { BidSheetsView } from "./views/BidSheetsView";
 import { OnCallHubView } from "./views/OnCallHubView";
+import { AccountView } from "./views/AccountView";
+import { AuthModal } from "./components/AuthModal";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -45,6 +47,7 @@ export default function App() {
   );
   const [theme, setTheme] = useState<Theme>(() => loadTheme());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
@@ -138,6 +141,13 @@ export default function App() {
         {tab.kind === "contact" && (
           <ContactView key={childKey} onStatus={reportStatus} />
         )}
+        {tab.kind === "account" && (
+          <AccountView
+            key={childKey}
+            onStatus={reportStatus}
+            onOpenAuth={() => setAuthOpen(true)}
+          />
+        )}
       </div>
 
       <SettingsModal
@@ -146,6 +156,7 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         onSave={handleSaveSettings}
       />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }
