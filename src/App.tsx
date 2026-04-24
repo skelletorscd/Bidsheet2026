@@ -9,7 +9,6 @@ import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
 import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
-import { BidSheetsView } from "./views/BidSheetsView";
 import { OnCallHubView } from "./views/OnCallHubView";
 import { AccountView } from "./views/AccountView";
 import { AuthModal } from "./components/AuthModal";
@@ -137,9 +136,6 @@ export default function App() {
         )}
         {tab.kind === "seniority" && (
           <RosterView key={childKey} onStatus={reportStatus} />
-        )}
-        {tab.kind === "bidSheet" && (
-          <BidSheetsView key={childKey} onStatus={reportStatus} />
         )}
         {tab.kind === "onCallHub" && (
           <OnCallHubView key={childKey} tab={tab} onStatus={reportStatus} />

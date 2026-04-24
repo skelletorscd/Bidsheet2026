@@ -6,7 +6,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  ScrollText,
   UserCircle,
 } from "lucide-react";
 
@@ -14,7 +13,6 @@ const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   dashboard: Home,
   account: UserCircle,
   seniority: ListOrdered,
-  bidSheet: ScrollText,
   onCallToledo: Phone,
   onCallNbl: Phone,
   locations: MapPin,

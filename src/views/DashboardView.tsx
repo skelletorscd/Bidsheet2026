@@ -6,13 +6,9 @@ import {
   ListOrdered,
   MapPin,
   Phone,
-  ScrollText,
   Truck,
   Users,
 } from "lucide-react";
-
-// Retained for Locations NavTile (below).
-void MapPin;
 import { HEADLINE_COUNTS } from "../data/roster";
 import { snapshotCapturedAt } from "../data/snapshots";
 
@@ -120,13 +116,6 @@ export function DashboardView({ onStatus }: Props) {
               title="Seniority"
               subtitle={`${HEADLINE_COUNTS.totalDrivers} drivers · picks + on-call status`}
               accent="fuchsia"
-            />
-            <NavTile
-              to="/?tab=bidSheet"
-              icon={ScrollText}
-              title="Bid sheet"
-              subtitle={`Toledo · N. Baltimore · Sleeper · ${HEADLINE_COUNTS.toledo.total + HEADLINE_COUNTS.nbloh.total + HEADLINE_COUNTS.sleeper.total} annual runs`}
-              accent="rose"
             />
             <NavTile
               to="/?tab=onCallToledo"
