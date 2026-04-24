@@ -10,6 +10,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import { RouteBuilder } from "../components/RouteBuilder";
 import {
   DIRECTORY,
   mapsDirectionsUrl,
@@ -153,6 +154,8 @@ export function LocationsView({ onStatus }: Props) {
             GPS, or tap a phone number to call.
           </p>
         </div>
+
+        <RouteBuilder />
 
         {/* ─── Prominent hero search ────────────────────────────────── */}
         <div className="relative mb-3">
