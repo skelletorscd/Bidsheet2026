@@ -89,14 +89,6 @@ export function OnCallHubView({ tab, onStatus }: Props) {
           </div>
         </section>
 
-        {parsed.notice && (
-          <div className="card p-3 mb-4 border-amber-500/30 bg-amber-500/5">
-            <p className="text-[12px] text-amber-200/90 leading-relaxed">
-              {parsed.notice}
-            </p>
-          </div>
-        )}
-
         {/* Prominent search */}
         <div className="relative mb-4">
           <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
