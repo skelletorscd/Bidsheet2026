@@ -39,39 +39,41 @@ export function DashboardView({ onStatus }: Props) {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-5">
+      <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
         {/* Hero */}
-        <section className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-bg-panel to-bg-base p-6 sm:p-8">
-          <div
-            className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-25 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(closest-side, rgba(245,158,11,0.7), transparent 70%)",
-              animation: "pulseDot 4s ease-in-out infinite",
-            }}
-          />
-          <div className="relative">
-            <div className="text-[11px] uppercase tracking-[0.4em] text-amber-300 font-bold">
-              Feeder Bids 2026
-            </div>
-            <h1 className="mt-2 font-extrabold text-3xl sm:text-5xl text-slate-50 tracking-tight">
-              Annual bids · locked in
-            </h1>
-            <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-              The 2026 annual feeder bid has closed. Everything on this site is
-              a permanent snapshot taken{" "}
-              <span className="text-amber-200 font-semibold">
-                {capturedAt.toLocaleString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
-              </span>{" "}
-              — the Google Sheet can change, this won't.
-            </p>
+        <section className="relative pt-8 sm:pt-12 pb-4">
+          <div className="text-[11px] uppercase tracking-[0.45em] font-bold text-amber-300">
+            Feeder Bids 2026
           </div>
+          <h1 className="hero-title mt-3 text-[44px] sm:text-[88px] leading-[0.95] tracking-[-0.04em]" style={{ color: "rgb(var(--fg))" }}>
+            Annual bids.
+            <br />
+            <span
+              style={{
+                background:
+                  "linear-gradient(135deg, rgb(253 186 116), rgb(244 114 182), rgb(167 139 250))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Locked in.
+            </span>
+          </h1>
+          <p className="mt-5 text-base sm:text-lg max-w-xl leading-relaxed" style={{ color: "rgb(var(--fg-muted))" }}>
+            The 2026 feeder bid has closed. Everything here is a permanent
+            snapshot from{" "}
+            <span className="font-semibold" style={{ color: "rgb(var(--fg))" }}>
+              {capturedAt.toLocaleString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+            .
+          </p>
         </section>
 
         {/* Quick stats */}
@@ -171,20 +173,20 @@ export function DashboardView({ onStatus }: Props) {
 type Accent = "amber" | "emerald" | "sky" | "rose" | "fuchsia" | "yellow";
 
 const ACCENT_BG: Record<Accent, string> = {
-  amber: "from-amber-500/15",
-  emerald: "from-emerald-500/15",
-  sky: "from-sky-500/15",
-  rose: "from-rose-500/15",
-  fuchsia: "from-fuchsia-500/15",
-  yellow: "from-yellow-500/15",
+  amber: "from-amber-400/35 bg-amber-400/40",
+  emerald: "from-emerald-400/35 bg-emerald-400/40",
+  sky: "from-sky-400/35 bg-sky-400/40",
+  rose: "from-rose-400/35 bg-rose-400/40",
+  fuchsia: "from-fuchsia-400/35 bg-fuchsia-400/40",
+  yellow: "from-yellow-400/35 bg-yellow-400/40",
 };
 const ACCENT_BORDER: Record<Accent, string> = {
-  amber: "border-amber-500/40",
-  emerald: "border-emerald-500/40",
-  sky: "border-sky-500/40",
-  rose: "border-rose-500/40",
-  fuchsia: "border-fuchsia-500/40",
-  yellow: "border-yellow-500/40",
+  amber: "border-amber-400/40",
+  emerald: "border-emerald-400/40",
+  sky: "border-sky-400/40",
+  rose: "border-rose-400/40",
+  fuchsia: "border-fuchsia-400/40",
+  yellow: "border-yellow-400/40",
 };
 const ACCENT_TEXT: Record<Accent, string> = {
   amber: "text-amber-300",
@@ -209,19 +211,31 @@ function StatCard({
   accent: Accent;
 }) {
   return (
-    <div
-      className={`card bg-gradient-to-br ${ACCENT_BG[accent]} via-transparent to-transparent ${ACCENT_BORDER[accent]} p-4`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+    <div className="card p-5 relative overflow-hidden">
+      <div
+        className={`absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-50 pointer-events-none ${ACCENT_BG[accent]}`}
+        style={{ filter: "blur(32px)" }}
+      />
+      <div className="relative flex items-center justify-between">
+        <span
+          className="text-[10px] uppercase tracking-[0.2em] font-semibold"
+          style={{ color: "rgb(var(--fg-faint))" }}
+        >
           {title}
         </span>
         <Icon className={`w-4 h-4 ${ACCENT_TEXT[accent]}`} />
       </div>
-      <div className={`text-3xl font-extrabold tabular mt-1 ${ACCENT_TEXT[accent]}`}>
+      <div
+        className={`relative text-4xl font-extrabold tabular mt-2 tracking-tight ${ACCENT_TEXT[accent]}`}
+      >
         {big}
       </div>
-      <div className="text-[11px] text-slate-500 mt-0.5">{small}</div>
+      <div
+        className="relative text-[11px] mt-1"
+        style={{ color: "rgb(var(--fg-faint))" }}
+      >
+        {small}
+      </div>
     </div>
   );
 }
@@ -242,18 +256,35 @@ function NavTile({
   return (
     <Link
       to={to}
-      className={`group card p-4 flex items-center gap-4 hover:bg-bg-hover transition-colors ${ACCENT_BORDER[accent]}`}
+      className="group card p-5 flex items-center gap-4 relative overflow-hidden transition-all hover:scale-[1.02]"
     >
       <div
-        className={`w-11 h-11 rounded-xl bg-gradient-to-br ${ACCENT_BG[accent]} via-transparent to-transparent border ${ACCENT_BORDER[accent]} flex items-center justify-center shrink-0`}
+        className={`absolute -top-8 -left-8 w-32 h-32 rounded-full opacity-35 pointer-events-none ${ACCENT_BG[accent]}`}
+        style={{ filter: "blur(36px)" }}
+      />
+      <div
+        className={`relative w-12 h-12 rounded-2xl bg-gradient-to-br ${ACCENT_BG[accent]} via-transparent to-transparent border ${ACCENT_BORDER[accent]} flex items-center justify-center shrink-0`}
       >
         <Icon className={`w-5 h-5 ${ACCENT_TEXT[accent]}`} />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-slate-100 font-semibold">{title}</div>
-        <div className="text-[12px] text-slate-400 truncate">{subtitle}</div>
+      <div className="flex-1 min-w-0 relative">
+        <div
+          className="font-semibold text-[15px] tracking-tight"
+          style={{ color: "rgb(var(--fg))" }}
+        >
+          {title}
+        </div>
+        <div
+          className="text-[12px] truncate mt-0.5"
+          style={{ color: "rgb(var(--fg-subtle))" }}
+        >
+          {subtitle}
+        </div>
       </div>
-      <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-amber-300 transition-colors shrink-0" />
+      <ChevronRight
+        className="w-5 h-5 relative shrink-0 transition-transform group-hover:translate-x-1"
+        style={{ color: "rgb(var(--fg-faint))" }}
+      />
     </Link>
   );
 }

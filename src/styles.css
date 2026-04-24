@@ -2,51 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Theme variables ───────────────────────────────────────────── */
-/* Dark is the default / no-theme-selected state. */
+/* ─── Theme tokens ─────────────────────────────────────────────────── */
+/* Dark (default) — deep indigo space. Light — soft warm ivory.         */
 :root {
   color-scheme: dark;
 
-  --bg-base: 10 14 22;
-  --bg-panel: 15 20 29;
-  --bg-raised: 21 27 38;
-  --bg-hover: 28 35 48;
+  --bg-base: 10 11 20;
+  --bg-panel: 20 18 38;
+  --bg-raised: 28 26 52;
+  --bg-hover: 40 38 72;
 
-  --border: 40 49 66;
-  --border-subtle: 31 39 51;
+  --border: 255 255 255;
+  --border-subtle: 255 255 255;
+
+  /* Alpha constants used by glass utilities */
+  --glass-bg-alpha: 0.045;
+  --glass-bg-strong-alpha: 0.08;
+  --glass-border-alpha: 0.09;
+  --glass-border-strong-alpha: 0.18;
+
+  --fg: 241 245 249;      /* slate-100 */
+  --fg-muted: 203 213 225; /* slate-300 */
+  --fg-subtle: 148 163 184; /* slate-400 */
+  --fg-faint: 100 116 139;  /* slate-500 */
 }
 
 html.light {
   color-scheme: light;
 
-  --bg-base: 255 255 255;
-  --bg-panel: 248 250 252;
-  --bg-raised: 241 245 249;
-  --bg-hover: 226 232 240;
+  --bg-base: 252 250 247;
+  --bg-panel: 255 255 255;
+  --bg-raised: 248 246 242;
+  --bg-hover: 237 233 224;
 
-  --border: 203 213 225;
-  --border-subtle: 226 232 240;
+  --border: 15 23 42;
+  --border-subtle: 15 23 42;
+
+  --glass-bg-alpha: 0.6;
+  --glass-bg-strong-alpha: 0.78;
+  --glass-border-alpha: 0.08;
+  --glass-border-strong-alpha: 0.14;
+
+  --fg: 15 23 42;        /* slate-900 */
+  --fg-muted: 51 65 85;   /* slate-700 */
+  --fg-subtle: 100 116 139; /* slate-500 */
+  --fg-faint: 148 163 184;  /* slate-400 */
 }
 
 html,
 body,
 #root {
   height: 100%;
-  background: rgb(var(--bg-base));
 }
 
 body {
+  min-height: 100vh;
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
-  color: rgb(241 245 249); /* slate-100 */
-}
-html.light body {
-  color: rgb(15 23 42); /* slate-900 */
+  color: rgb(var(--fg));
+  position: relative;
+  overflow-x: hidden;
+  /* Deep space radial gradient base */
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 10% -10%,
+      rgba(245, 158, 11, 0.18),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 100% 80% at 110% 20%,
+      rgba(168, 85, 247, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 120% 100% at 50% 130%,
+      rgba(14, 165, 233, 0.18),
+      transparent 55%
+    ),
+    rgb(var(--bg-base));
+  background-attachment: fixed;
 }
 
-/* ─── Slate colour remap for light mode ─────────────────────────── */
-/* Keeps every existing `text-slate-*` utility meaningful in both     */
-/* themes without touching each component.                           */
+html.light body {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 10% -10%,
+      rgba(245, 158, 11, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 100% 80% at 110% 20%,
+      rgba(244, 114, 182, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 120% 100% at 50% 130%,
+      rgba(14, 165, 233, 0.2),
+      transparent 55%
+    ),
+    rgb(var(--bg-base));
+}
+
+/* Floating ambient orbs — pure CSS, fixed so they don't scroll */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.45;
+  will-change: transform;
+}
+body::before {
+  width: 45vw;
+  height: 45vw;
+  max-width: 620px;
+  max-height: 620px;
+  top: -10vh;
+  left: -10vw;
+  background: radial-gradient(
+    circle,
+    rgba(245, 158, 11, 0.55),
+    transparent 70%
+  );
+  animation: orbFloatA 18s ease-in-out infinite;
+}
+body::after {
+  width: 50vw;
+  height: 50vw;
+  max-width: 680px;
+  max-height: 680px;
+  bottom: -15vh;
+  right: -12vw;
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.5),
+    transparent 70%
+  );
+  animation: orbFloatB 22s ease-in-out infinite;
+}
+html.light body::before {
+  opacity: 0.6;
+  background: radial-gradient(
+    circle,
+    rgba(251, 191, 36, 0.7),
+    transparent 70%
+  );
+}
+html.light body::after {
+  opacity: 0.45;
+  background: radial-gradient(
+    circle,
+    rgba(244, 114, 182, 0.55),
+    transparent 70%
+  );
+}
+
+@keyframes orbFloatA {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(4vw, 6vh); }
+}
+@keyframes orbFloatB {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-4vw, -5vh); }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Slate colour remap for light mode (legacy classes still in some places) */
 html.light .text-slate-50  { color: rgb(15 23 42); }
 html.light .text-slate-100 { color: rgb(15 23 42); }
 html.light .text-slate-200 { color: rgb(30 41 59); }
@@ -59,7 +188,6 @@ html.light .bg-slate-700\/40 { background-color: rgb(226 232 240 / 0.6); }
 html.light .bg-slate-800\/60 { background-color: rgb(226 232 240 / 0.8); }
 html.light .border-slate-600 { border-color: rgb(203 213 225); }
 
-/* Accent tints look washed out on light; bump opacity. */
 html.light .bg-amber-500\/10  { background-color: rgb(245 158 11 / 0.12); }
 html.light .bg-amber-500\/15  { background-color: rgb(245 158 11 / 0.15); }
 html.light .bg-emerald-500\/15 { background-color: rgb(16 185 129 / 0.15); }
@@ -74,10 +202,6 @@ html.light .text-purple-300 { color: rgb(126 34 206); }
 html.light .text-rose-300 { color: rgb(190 18 60); }
 html.light .text-sky-300 { color: rgb(2 132 199); }
 
-* {
-  border-color: rgb(var(--border-subtle));
-}
-
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -86,14 +210,13 @@ html.light .text-sky-300 { color: rgb(2 132 199); }
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--border));
+  background: rgb(var(--border) / 0.18);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--border) / 0.8);
+  background: rgb(var(--border) / 0.28);
 }
 
-/* Respect coarse-pointer (touchscreen) media for bigger tap hit-areas */
 @media (pointer: coarse) {
   button,
   [role="button"],
@@ -104,216 +227,113 @@ html.light .text-sky-300 { color: rgb(2 132 199); }
   }
 }
 
-/* ─── Celebration keyframes (declared here so they always ship even if
-   Tailwind tree-shakes unused animation utilities) ────────────────── */
-@keyframes celebIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes celebOut {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.95); }
-}
-@keyframes textPop {
-  0%   { opacity: 0; transform: scale(0.4) translateY(40px); }
-  60%  { opacity: 1; transform: scale(1.12) translateY(-6px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-@keyframes screenShake {
-  0%,100% { transform: translate(0,0); }
-  20%     { transform: translate(-12px, 6px); }
-  40%     { transform: translate(10px, -4px); }
-  60%     { transform: translate(-6px, 3px); }
-  80%     { transform: translate(4px, -2px); }
-}
-@keyframes moonwalkGlide {
-  from { transform: translateX(110vw) scaleX(-1); }
-  to   { transform: translateX(-30vw) scaleX(-1); }
-}
-@keyframes moonwalkBob {
-  0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-10px); }
-}
-@keyframes rocketFly {
-  0%   { transform: translate(-20vw, 40vh) rotate(-25deg); opacity: 0; }
-  10%  { opacity: 1; }
-  100% { transform: translate(70vw, -70vh) rotate(-25deg); opacity: 0; }
-}
-@keyframes trailFade {
-  0%,100% { opacity: 0; }
-  50%     { opacity: 0.8; }
-}
-@keyframes tntDrop {
-  0%   { transform: translateY(-80vh) rotate(-18deg); }
-  70%  { transform: translateY(10px) rotate(4deg); }
-  85%  { transform: translateY(-4px) rotate(-2deg); }
-  100% { transform: translateY(0) rotate(0); }
-}
-@keyframes tntShake {
-  0%,100% { transform: translate(0,0) rotate(0); }
-  25%     { transform: translate(-2px, 1px) rotate(-1deg); }
-  50%     { transform: translate(2px, -1px) rotate(1deg); }
-  75%     { transform: translate(-1px, 2px) rotate(-0.5deg); }
-}
-@keyframes boomRing {
-  from { transform: scale(0); opacity: 0.9; }
-  to   { transform: scale(6); opacity: 0; }
-}
-@keyframes particleBurst {
-  from {
-    transform: translate(0,0) scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: translate(var(--dx, 0), var(--dy, 0)) scale(0.4);
-    opacity: 0;
-  }
-}
-@keyframes coinFall {
-  0%   { transform: translateY(-20px) rotate(0); opacity: 0; }
-  20%  { opacity: 1; }
-  100% {
-    transform:
-      translateY(var(--fall, 240px))
-      rotate(720deg)
-      translateX(var(--drift, 0));
-    opacity: 0;
-  }
-}
-@keyframes stampSlam {
-  0%   { transform: scale(3) rotate(-18deg); opacity: 0; }
-  60%  { transform: scale(0.92) rotate(-6deg); opacity: 1; }
-  80%  { transform: scale(1.05) rotate(-6deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
-}
-@keyframes stampRadiate {
-  from { transform: scale(0.8); opacity: 0.6; }
-  to   { transform: scale(2.4); opacity: 0; }
-}
-@keyframes shimmer {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
-}
-@keyframes hourglassFlip {
-  0%, 40% { transform: rotate(0deg); }
-  50%     { transform: rotate(180deg); }
-  90%, 100% { transform: rotate(180deg); }
-}
-
-/* Lightning */
-@keyframes lightningFlash {
-  0%   { opacity: 0; }
-  10%  { opacity: 1; }
-  35%  { opacity: 0.2; }
-  45%  { opacity: 0.85; }
-  100% { opacity: 0; }
-}
-@keyframes lightningBolt {
-  0%   { opacity: 0; transform: translateY(-200px) scale(0.6); }
-  20%  { opacity: 1; transform: translateY(0) scale(1); }
-  50%  { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0.4; transform: translateY(0) scale(1); }
-}
-
-/* Trophy */
-@keyframes trophyRise {
-  0%   { transform: translateY(60vh) rotate(-10deg) scale(0.6); opacity: 0; }
-  60%  { transform: translateY(-10px) rotate(4deg) scale(1.1); opacity: 1; }
-  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
-}
-
-/* Confetti */
-@keyframes confettiBurst {
-  0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-  100% {
-    transform:
-      translate(var(--dx, 0), var(--dy, 0))
-      rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* Disco ball */
-@keyframes discoSwing {
-  0%, 100% { transform: rotate(-10deg); }
-  50%      { transform: rotate(10deg); }
-}
-@keyframes discoSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* Boxing KO */
-@keyframes punchIn {
-  0%   { transform: translate(-80vw, 30vh) rotate(-30deg) scale(2); opacity: 0; }
-  60%  { transform: translate(0, 0) rotate(0) scale(1.4); opacity: 1; }
-  85%  { transform: translate(0, 0) rotate(0) scale(0.95); }
-  100% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
-}
-@keyframes koShatter {
-  0%   { transform: scale(4) rotate(-12deg); opacity: 0; letter-spacing: 1.5em; }
-  60%  { transform: scale(0.95) rotate(-3deg); opacity: 1; letter-spacing: 0.1em; }
-  100% { transform: scale(1) rotate(0); opacity: 1; letter-spacing: 0.15em; }
-}
-
-/* Lions roar */
-@keyframes lionCharge {
-  0%   { transform: translateY(40vh) scale(0.4); opacity: 0; }
-  60%  { transform: translateY(-15px) scale(1.2); opacity: 1; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes lionShake {
-  0%, 100% { transform: rotate(-3deg); }
-  50%      { transform: rotate(3deg); }
-}
-@keyframes lionLeap {
-  0%   { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
-  35%  { transform: translate(-30vw, -10vh) scale(1.05) rotate(-8deg); opacity: 1; }
-  100% { transform: translate(120vw, -90vh) scale(0.6) rotate(-25deg); opacity: 0; }
-}
-
-/* Claw machine */
-@keyframes clawDescend {
-  0%   { transform: translate(-50%, 0); }
-  100% { transform: translate(-50%, 200px); }
-}
-@keyframes clawAscend {
-  0%   { transform: translate(-50%, 200px); }
-  60%  { transform: translate(-50%, -10px); }
-  100% { transform: translate(-50%, 0); }
-}
-@keyframes clawGrab {
-  0%   { transform: scale(0.4); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-@keyframes duckyAppear {
-  0%   { transform: translateY(40px) scale(0.4); opacity: 0; }
-  60%  { transform: translateY(-10px) scale(1.15); opacity: 1; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes duckyBob {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50%      { transform: translateY(-6px) rotate(2deg); }
-}
-
+/* ─── Glass primitives ─────────────────────────────────────────────── */
 @layer components {
   .pill {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium tracking-wide uppercase;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium tracking-wide uppercase;
   }
+
+  /* Glass card — every major container uses this. */
   .card {
-    @apply bg-bg-panel border border-border-subtle rounded-xl;
+    background-color: rgb(var(--bg-panel) / var(--glass-bg-alpha));
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    border: 1px solid rgb(var(--border) / var(--glass-border-alpha));
+    border-radius: 20px;
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.04) inset,
+      0 20px 40px -20px rgb(0 0 0 / 0.35);
   }
+
+  .card-strong {
+    background-color: rgb(var(--bg-panel) / var(--glass-bg-strong-alpha));
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid rgb(var(--border) / var(--glass-border-strong-alpha));
+    border-radius: 24px;
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.06) inset,
+      0 30px 60px -30px rgb(0 0 0 / 0.45);
+  }
+
   .btn {
-    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm text-slate-200 hover:bg-bg-hover transition-colors;
+    @apply inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all;
+    background-color: rgb(var(--bg-raised) / 0.35);
+    border: 1px solid rgb(var(--border) / 0.12);
+    color: rgb(var(--fg));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .btn:hover:not(:disabled) {
+    background-color: rgb(var(--bg-raised) / 0.55);
+    border-color: rgb(var(--border) / 0.2);
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   .btn-primary {
-    @apply bg-amber-500/15 border-amber-500/30 text-amber-200 hover:bg-amber-500/25;
+    background-color: rgb(245 158 11 / 0.2);
+    border-color: rgb(245 158 11 / 0.4);
+    color: rgb(252 211 77);
   }
+  .btn-primary:hover:not(:disabled) {
+    background-color: rgb(245 158 11 / 0.3);
+    border-color: rgb(245 158 11 / 0.55);
+  }
+
   .input {
-    @apply bg-bg-base border border-border rounded-md px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-500
-           focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30;
+    background-color: rgb(var(--bg-raised) / 0.4);
+    border: 1px solid rgb(var(--border) / 0.12);
+    border-radius: 14px;
+    padding: 0.6rem 0.9rem;
+    color: rgb(var(--fg));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: border-color 120ms ease, box-shadow 120ms ease,
+                background-color 120ms ease;
+    font-size: 0.9rem;
   }
+  .input:focus {
+    outline: none;
+    border-color: rgb(245 158 11 / 0.55);
+    box-shadow: 0 0 0 3px rgb(245 158 11 / 0.18);
+    background-color: rgb(var(--bg-raised) / 0.6);
+  }
+  .input::placeholder {
+    color: rgb(var(--fg-faint));
+  }
+
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Nav-rail link style used by the sidebar on desktop. */
+  .rail-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors;
+    color: rgb(var(--fg-subtle));
+  }
+  .rail-link:hover {
+    background-color: rgb(var(--bg-hover) / 0.4);
+    color: rgb(var(--fg));
+  }
+  .rail-link.active {
+    background-color: rgb(245 158 11 / 0.15);
+    color: rgb(252 211 77);
+    box-shadow: inset 0 0 0 1px rgb(245 158 11 / 0.25);
+  }
 }
+
+/* Utility helpers */
+.hero-title {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* no-scrollbar helper for horizontal scrollers */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

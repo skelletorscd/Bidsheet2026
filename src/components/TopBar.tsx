@@ -1,6 +1,4 @@
 import { Monitor, Moon, RefreshCw, Settings, Sun, Truck } from "lucide-react";
-import { StatusDot } from "./StatusDot";
-import { formatRelative } from "../util/format";
 import { Theme } from "../data/theme";
 
 type Props = {
@@ -16,46 +14,25 @@ type Props = {
 };
 
 export function TopBar({
-  fetchedAt,
   loading,
-  error,
-  source,
   theme,
   resolvedTheme,
   onCycleTheme,
   onRefresh,
   onOpenSettings,
 }: Props) {
-  const state: "live" | "stale" | "error" | "loading" = error
-    ? "error"
-    : loading
-      ? "loading"
-      : source === "cache"
-        ? "stale"
-        : "live";
-
-  const label = error
-    ? "Fetch error"
-    : loading
-      ? "Refreshing…"
-      : source === "cache"
-        ? "Cached"
-        : source === "paste"
-          ? "Pasted CSV"
-          : "Live";
-
   return (
-    <header className="sticky top-0 z-30 bg-bg-base/95 backdrop-blur border-b border-border-subtle">
-      <div className="max-w-[1600px] mx-auto px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-3">
-        <div className="flex items-center gap-2 mr-2 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <Truck className="w-4 h-4 text-amber-300" />
+    <header className="sticky top-0 z-30 backdrop-blur-2xl" style={{ background: "rgb(var(--bg-base) / 0.65)" }}>
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-5 h-14 flex items-center gap-2 sm:gap-3 border-b" style={{ borderColor: "rgb(var(--border) / 0.08)" }}>
+        <div className="flex items-center gap-2.5 mr-2 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+            <Truck className="w-4.5 h-4.5 text-bg-base" style={{ color: "#0a0b14" }} />
           </div>
           <div className="leading-tight min-w-0">
-            <div className="text-[15px] font-semibold text-slate-100 whitespace-nowrap">
+            <div className="text-[15px] font-semibold whitespace-nowrap tracking-tight" style={{ color: "rgb(var(--fg))" }}>
               Feeder Bids 2026
             </div>
-            <div className="hidden sm:block text-[11px] text-slate-400 tabular whitespace-nowrap">
+            <div className="hidden sm:block text-[11px] tabular whitespace-nowrap" style={{ color: "rgb(var(--fg-faint))" }}>
               Toledo · North Baltimore
             </div>
           </div>
@@ -63,31 +40,11 @@ export function TopBar({
 
         <div className="flex-1" />
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-          <StatusDot state={state} />
-          <span className="text-slate-300">{label}</span>
-          <span className="text-slate-500">·</span>
-          <span className="tabular">updated {formatRelative(fetchedAt)}</span>
-        </div>
+        <IconButton onClick={onRefresh} disabled={loading} label="Refresh">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        </IconButton>
 
-        <button
-          className="btn"
-          onClick={onRefresh}
-          disabled={loading}
-          title="Refresh now"
-        >
-          <RefreshCw
-            className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-          />
-          <span className="hidden sm:inline">Refresh</span>
-        </button>
-
-        <button
-          className="btn"
-          onClick={onCycleTheme}
-          title={themeTooltip(theme, resolvedTheme)}
-          aria-label={themeTooltip(theme, resolvedTheme)}
-        >
+        <IconButton onClick={onCycleTheme} label={themeTooltip(theme, resolvedTheme)}>
           {theme === "system" ? (
             <Monitor className="w-4 h-4" />
           ) : resolvedTheme === "light" ? (
@@ -95,18 +52,44 @@ export function TopBar({
           ) : (
             <Moon className="w-4 h-4" />
           )}
-        </button>
+        </IconButton>
 
-        <button
-          className="btn"
-          onClick={onOpenSettings}
-          title="Settings"
-          aria-label="Settings"
-        >
+        <IconButton onClick={onOpenSettings} label="Settings">
           <Settings className="w-4 h-4" />
-        </button>
+        </IconButton>
       </div>
     </header>
+  );
+}
+
+function IconButton({
+  onClick,
+  disabled,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+      className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+      style={{
+        background: "rgb(var(--bg-raised) / 0.35)",
+        color: "rgb(var(--fg-muted))",
+        border: "1px solid rgb(var(--border) / 0.1)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
