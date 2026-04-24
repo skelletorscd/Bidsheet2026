@@ -16,9 +16,27 @@ create table if not exists public.profiles (
   -- FK to roster_driver.rank once their identity claim is approved.
   -- NULL until approval.
   claimed_driver_rank integer,
+  -- Pay rates (dollars). NULL until the driver fills them in.
+  hourly_rate numeric(6, 2),
+  mileage_rate numeric(6, 3),
+  -- Set to now() when the driver clocks in; null when clocked out.
+  -- Client computes elapsed time + earnings client-side from this anchor.
+  clocked_in_at timestamptz,
+  -- Opt-in: receive browser notifications for 10-hr / 14-hr cutoffs.
+  alerts_enabled boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Backfill for existing profiles (safe to re-run).
+alter table public.profiles
+  add column if not exists hourly_rate numeric(6, 2);
+alter table public.profiles
+  add column if not exists mileage_rate numeric(6, 3);
+alter table public.profiles
+  add column if not exists clocked_in_at timestamptz;
+alter table public.profiles
+  add column if not exists alerts_enabled boolean not null default false;
 
 create index if not exists profiles_claimed_driver_rank_idx
   on public.profiles (claimed_driver_rank);

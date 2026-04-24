@@ -8,6 +8,10 @@ export type Profile = {
   photo_url: string | null;
   is_admin: boolean;
   claimed_driver_rank: number | null;
+  hourly_rate: number | null;
+  mileage_rate: number | null;
+  clocked_in_at: string | null; // ISO timestamp
+  alerts_enabled: boolean;
 };
 
 export type SessionState = {
@@ -24,7 +28,9 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   if (!sb) return null;
   const { data, error } = await sb
     .from("profiles")
-    .select("id, display_name, photo_url, is_admin, claimed_driver_rank")
+    .select(
+      "id, display_name, photo_url, is_admin, claimed_driver_rank, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled",
+    )
     .eq("id", userId)
     .maybeSingle();
   if (error) {

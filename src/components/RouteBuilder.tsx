@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowDown,
@@ -21,18 +21,26 @@ import {
 import { DIRECTORY, DirectoryRow } from "../data/directory.generated";
 import { ALL_BIDS, SnapshotBid } from "../data/roster";
 import { Leg } from "../types";
+import { RouteStop as Stop, useRouteDraft } from "../data/useRouteDraft";
 
 const DIRECTORY_BY_CODE: Record<string, DirectoryRow> = Object.fromEntries(
   DIRECTORY.map((r) => [r.code, r]),
 );
 
-export type Stop =
-  | { kind: "directory"; code: string }
-  | { kind: "custom"; label: string; address: string };
+export type { Stop };
 
 export function RouteBuilder() {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"bid" | "custom">("bid");
+  const draft = useRouteDraft();
+  // Default to custom mode + open when the draft already has stops (so that
+  // an 'Add to route' tap on a card opens straight to the list).
+  const [open, setOpen] = useState(draft.stops.length > 0);
+  const [mode, setMode] = useState<"bid" | "custom">(
+    draft.stops.length > 0 ? "custom" : "bid",
+  );
+  useEffect(() => {
+    if (draft.stops.length > 0 && !open) setOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.stops.length]);
 
   return (
     <section className="card p-4 sm:p-5 mb-6">
@@ -334,7 +342,8 @@ function locationCodesFromLeg(leg: Leg): string[] {
 // ─── Custom mode ───────────────────────────────────────────────────────
 
 function CustomRouteMode() {
-  const [stops, setStops] = useState<Stop[]>([]);
+  const draft = useRouteDraft();
+  const stops = draft.stops;
   const [search, setSearch] = useState("");
   const [customInput, setCustomInput] = useState("");
 
@@ -357,13 +366,11 @@ function CustomRouteMode() {
   }, [stops, search]);
 
   const addDirectory = (code: string) => {
-    setStops((s) => [...s, { kind: "directory", code }]);
+    draft.addDirectory(code);
     setSearch("");
   };
   const addCustom = (address: string, label?: string) => {
-    const trimmed = address.trim();
-    if (!trimmed) return;
-    setStops((s) => [...s, { kind: "custom", label: label ?? trimmed, address: trimmed }]);
+    draft.addCustom(address, label);
     setCustomInput("");
   };
   const addPitStop = (kind: "gas" | "food" | "rest") => {
@@ -378,16 +385,8 @@ function CustomRouteMode() {
       (kind === "gas" ? "⛽ " : kind === "food" ? "🍔 " : "🛑 ") + q.trim();
     addCustom(q, label);
   };
-  const remove = (idx: number) =>
-    setStops((s) => s.filter((_, i) => i !== idx));
-  const move = (idx: number, dir: -1 | 1) =>
-    setStops((s) => {
-      const next = [...s];
-      const j = idx + dir;
-      if (j < 0 || j >= next.length) return s;
-      [next[idx], next[j]] = [next[j], next[idx]];
-      return next;
-    });
+  const remove = draft.remove;
+  const move = draft.move;
 
   const customCount = stops.filter((s) => s.kind === "custom").length;
 
@@ -627,7 +626,7 @@ function CustomRouteMode() {
             <button
               type="button"
               className="hover:text-amber-300 underline-offset-2 hover:underline"
-              onClick={() => setStops([])}
+              onClick={() => draft.clear()}
             >
               clear all
             </button>

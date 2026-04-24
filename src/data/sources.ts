@@ -1,5 +1,6 @@
 export type TabKey =
   | "dashboard"
+  | "clock"
   | "account"
   | "seniority"
   | "onCallToledo"
@@ -15,6 +16,7 @@ export type TabSource = {
   gid: number | null;
   kind:
     | "dashboard"
+    | "clock"
     | "account"
     | "seniority"
     | "onCallHub"
@@ -32,6 +34,14 @@ export const TAB_SOURCES: TabSource[] = [
     hub: null,
     gid: null,
     kind: "dashboard",
+  },
+  {
+    key: "clock",
+    label: "Clock",
+    shortLabel: "Clock",
+    hub: null,
+    gid: null,
+    kind: "clock",
   },
   {
     key: "account",

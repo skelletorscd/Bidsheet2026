@@ -11,6 +11,7 @@ import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
 import { OnCallHubView } from "./views/OnCallHubView";
 import { AccountView } from "./views/AccountView";
+import { ClockView } from "./views/ClockView";
 import { AuthModal } from "./components/AuthModal";
 import { PasswordResetModal } from "./components/PasswordResetModal";
 import { useSession } from "./data/useSession";
@@ -148,6 +149,13 @@ export default function App() {
         )}
         {tab.kind === "account" && (
           <AccountView
+            key={childKey}
+            onStatus={reportStatus}
+            onOpenAuth={() => setAuthOpen(true)}
+          />
+        )}
+        {tab.kind === "clock" && (
+          <ClockView
             key={childKey}
             onStatus={reportStatus}
             onOpenAuth={() => setAuthOpen(true)}
