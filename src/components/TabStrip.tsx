@@ -1,22 +1,20 @@
 import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
-  Building2,
   Home,
+  ListOrdered,
   Mail,
   MapPin,
+  Phone,
   ScrollText,
-  Truck,
-  Users,
 } from "lucide-react";
 
 const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   dashboard: Home,
-  toledo: Building2,
-  northBaltimore: Building2,
-  sleeper: Truck,
-  roster: Users,
-  bidSheets: ScrollText,
+  seniority: ListOrdered,
+  bidSheet: ScrollText,
+  onCallToledo: Phone,
+  onCallNbl: Phone,
   locations: MapPin,
   contact: Mail,
 };

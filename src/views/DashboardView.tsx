@@ -3,11 +3,16 @@ import { Link } from "react-router-dom";
 import {
   Building2,
   ChevronRight,
+  ListOrdered,
   MapPin,
+  Phone,
   ScrollText,
   Truck,
   Users,
 } from "lucide-react";
+
+// Retained for Locations NavTile (below).
+void MapPin;
 import { HEADLINE_COUNTS } from "../data/roster";
 import { snapshotCapturedAt } from "../data/snapshots";
 
@@ -108,39 +113,32 @@ export function DashboardView({ onStatus }: Props) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <NavTile
-              to="/?tab=toledo"
-              icon={Building2}
-              title="Toledo bids"
-              subtitle={`${HEADLINE_COUNTS.toledo.total} annual runs · ${HEADLINE_COUNTS.toledo.taken} taken`}
-              accent="amber"
-            />
-            <NavTile
-              to="/?tab=northBaltimore"
-              icon={Building2}
-              title="North Baltimore bids"
-              subtitle={`${HEADLINE_COUNTS.nbloh.total} annual runs · ${HEADLINE_COUNTS.nbloh.taken} taken`}
-              accent="emerald"
-            />
-            <NavTile
-              to="/?tab=sleeper"
-              icon={Truck}
-              title="Sleeper teams"
-              subtitle={`${HEADLINE_COUNTS.sleeper.total} team routes`}
-              accent="sky"
-            />
-            <NavTile
-              to="/?tab=roster"
-              icon={Users}
-              title="Roster"
-              subtitle={`${HEADLINE_COUNTS.totalDrivers} drivers · seniority + picks + on-call`}
+              to="/?tab=seniority"
+              icon={ListOrdered}
+              title="Seniority"
+              subtitle={`${HEADLINE_COUNTS.totalDrivers} drivers · picks + on-call status`}
               accent="fuchsia"
             />
             <NavTile
-              to="/?tab=bidSheets"
+              to="/?tab=bidSheet"
               icon={ScrollText}
-              title="Bid sheets"
-              subtitle="The full annual bid notice, as posted"
+              title="Bid sheet"
+              subtitle={`Toledo · N. Baltimore · Sleeper · ${HEADLINE_COUNTS.toledo.total + HEADLINE_COUNTS.nbloh.total + HEADLINE_COUNTS.sleeper.total} annual runs`}
               accent="rose"
+            />
+            <NavTile
+              to="/?tab=onCallToledo"
+              icon={Phone}
+              title="On-Call Toledo"
+              subtitle={`${HEADLINE_COUNTS.onCallToledo.filled}/${HEADLINE_COUNTS.onCallToledo.total} drivers on the board`}
+              accent="amber"
+            />
+            <NavTile
+              to="/?tab=onCallNbl"
+              icon={Phone}
+              title="On-Call N. Baltimore"
+              subtitle={`${HEADLINE_COUNTS.onCallNbloh.filled}/${HEADLINE_COUNTS.onCallNbloh.total} drivers on the board`}
+              accent="emerald"
             />
             <NavTile
               to="/?tab=locations"

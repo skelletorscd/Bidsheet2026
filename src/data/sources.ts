@@ -1,10 +1,9 @@
 export type TabKey =
   | "dashboard"
-  | "toledo"
-  | "northBaltimore"
-  | "sleeper"
-  | "roster"
-  | "bidSheets"
+  | "seniority"
+  | "bidSheet"
+  | "onCallToledo"
+  | "onCallNbl"
   | "locations"
   | "contact";
 
@@ -16,9 +15,9 @@ export type TabSource = {
   gid: number | null;
   kind:
     | "dashboard"
-    | "annualBid"
-    | "roster"
-    | "bidSheets"
+    | "seniority"
+    | "bidSheet"
+    | "onCallHub"
     | "locations"
     | "contact";
 };
@@ -28,51 +27,27 @@ export const DEFAULT_SPREADSHEET_ID = "1sIu6_ndtJRlmz-1gRRRBCudsLezPPJ0U";
 export const TAB_SOURCES: TabSource[] = [
   {
     key: "dashboard",
-    label: "Dashboard",
+    label: "Home",
     shortLabel: "Home",
     hub: null,
     gid: null,
     kind: "dashboard",
   },
   {
-    key: "toledo",
-    label: "Toledo",
-    shortLabel: "Toledo",
+    key: "onCallToledo",
+    label: "On-Call Toledo",
+    shortLabel: "OC Toledo",
     hub: "TOL",
-    gid: 1758902346,
-    kind: "annualBid",
+    gid: null,
+    kind: "onCallHub",
   },
   {
-    key: "northBaltimore",
-    label: "North Baltimore",
-    shortLabel: "N. Baltimore",
+    key: "onCallNbl",
+    label: "On-Call N. Baltimore",
+    shortLabel: "OC NBL",
     hub: "NBL",
-    gid: 1635180906,
-    kind: "annualBid",
-  },
-  {
-    key: "sleeper",
-    label: "Sleeper",
-    shortLabel: "Sleeper",
-    hub: "ALL",
-    gid: 1077520417,
-    kind: "annualBid",
-  },
-  {
-    key: "roster",
-    label: "Roster",
-    shortLabel: "Roster",
-    hub: null,
     gid: null,
-    kind: "roster",
-  },
-  {
-    key: "bidSheets",
-    label: "Bid Sheets",
-    shortLabel: "Sheets",
-    hub: null,
-    gid: null,
-    kind: "bidSheets",
+    kind: "onCallHub",
   },
   {
     key: "locations",
@@ -83,12 +58,28 @@ export const TAB_SOURCES: TabSource[] = [
     kind: "locations",
   },
   {
+    key: "bidSheet",
+    label: "Bid Sheet",
+    shortLabel: "Bid Sheet",
+    hub: null,
+    gid: null,
+    kind: "bidSheet",
+  },
+  {
     key: "contact",
     label: "Contact",
     shortLabel: "Contact",
     hub: null,
     gid: null,
     kind: "contact",
+  },
+  {
+    key: "seniority",
+    label: "Seniority",
+    shortLabel: "Seniority",
+    hub: null,
+    gid: null,
+    kind: "seniority",
   },
 ];
 

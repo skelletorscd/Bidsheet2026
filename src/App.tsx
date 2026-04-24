@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import { TopBar } from "./components/TopBar";
 import { TabStrip } from "./components/TabStrip";
 import { SettingsModal } from "./components/SettingsModal";
-import { AnnualBidView } from "./views/AnnualBidView";
 import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
 import { useGlobalCounts } from "./data/useGlobalCounts";
 import { LocationsView } from "./views/LocationsView";
@@ -11,6 +10,7 @@ import { ContactView } from "./views/ContactView";
 import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
 import { BidSheetsView } from "./views/BidSheetsView";
+import { OnCallHubView } from "./views/OnCallHubView";
 import { TAB_SOURCES, TabKey } from "./data/sources";
 import { loadSettings, saveSettings, Settings } from "./data/settings";
 import {
@@ -67,33 +67,17 @@ export default function App() {
 
   const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
 
-  const globalCounts = useGlobalCounts(settings);
-
-  const mergedLocations = locations;
+  const globalCounts = useGlobalCounts();
 
   const handleSaveSettings = useCallback((s: Settings) => {
     setSettings(s);
     saveSettings(s);
   }, []);
 
-  const handleSaveLocation = useCallback(
-    (
-      code: string,
-      name: string,
-      address: string | undefined,
-      confirmed: boolean,
-    ) => {
-      setLocations((prev) => {
-        const next = {
-          ...prev,
-          [code]: { ...prev[code], name, address, confirmed },
-        };
-        saveLocations(next);
-        return next;
-      });
-    },
-    [],
-  );
+  // Retained for when a location-edit flow is surfaced again.
+  void locations;
+  void setLocations;
+  void saveLocations;
 
   const [globalFetchedAt, setGlobalFetchedAt] = useState<number | null>(null);
   const [globalLoading, setGlobalLoading] = useState(false);
@@ -139,21 +123,14 @@ export default function App() {
         {tab.kind === "dashboard" && (
           <DashboardView key={childKey} onStatus={reportStatus} />
         )}
-        {tab.kind === "annualBid" && (
-          <AnnualBidView
-            key={childKey}
-            tab={tab}
-            settings={settings}
-            locations={mergedLocations}
-            onSaveLocation={handleSaveLocation}
-            onStatus={reportStatus}
-          />
-        )}
-        {tab.kind === "roster" && (
+        {tab.kind === "seniority" && (
           <RosterView key={childKey} onStatus={reportStatus} />
         )}
-        {tab.kind === "bidSheets" && (
+        {tab.kind === "bidSheet" && (
           <BidSheetsView key={childKey} onStatus={reportStatus} />
+        )}
+        {tab.kind === "onCallHub" && (
+          <OnCallHubView key={childKey} tab={tab} onStatus={reportStatus} />
         )}
         {tab.kind === "locations" && (
           <LocationsView key={childKey} onStatus={reportStatus} />
