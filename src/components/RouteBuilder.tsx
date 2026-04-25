@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ChevronDown,
@@ -419,17 +420,22 @@ function CustomRouteMode() {
                   ? DIRECTORY_BY_CODE[stop.code]
                   : null;
               const last = i === stops.length - 1;
+              const broken = !isRoutable(stop);
               return (
                 <li key={i}>
                   <div
                     className="rounded-2xl p-3 flex items-center gap-3 relative"
                     style={{
-                      background: isCustom
-                        ? "linear-gradient(135deg, rgb(168 85 247 / 0.18), rgb(168 85 247 / 0.05))"
-                        : "linear-gradient(135deg, rgb(245 158 11 / 0.14), rgb(var(--bg-raised) / 0.3))",
-                      border: isCustom
-                        ? "1px solid rgb(168 85 247 / 0.4)"
-                        : "1px solid rgb(245 158 11 / 0.3)",
+                      background: broken
+                        ? "linear-gradient(135deg, rgb(244 63 94 / 0.18), rgb(244 63 94 / 0.05))"
+                        : isCustom
+                          ? "linear-gradient(135deg, rgb(168 85 247 / 0.18), rgb(168 85 247 / 0.05))"
+                          : "linear-gradient(135deg, rgb(245 158 11 / 0.14), rgb(var(--bg-raised) / 0.3))",
+                      border: broken
+                        ? "1px solid rgb(244 63 94 / 0.5)"
+                        : isCustom
+                          ? "1px solid rgb(168 85 247 / 0.4)"
+                          : "1px solid rgb(245 158 11 / 0.3)",
                     }}
                   >
                     <div
@@ -483,12 +489,20 @@ function CustomRouteMode() {
                               : ""}
                           </span>
                         </div>
-                        {directoryRow?.address && (
+                        {directoryRow?.address ? (
                           <div
                             className="text-[11px] truncate"
                             style={{ color: "rgb(var(--fg-subtle))" }}
                           >
                             {directoryRow.address}
+                          </div>
+                        ) : (
+                          <div
+                            className="text-[11px] truncate flex items-center gap-1 text-rose-300"
+                          >
+                            <AlertTriangle className="w-3 h-3" />
+                            No address on file — Maps can't route here. Remove
+                            or use a custom address.
                           </div>
                         )}
                       </div>
@@ -678,37 +692,63 @@ function CustomRouteMode() {
         )}
       </div>
 
-      {stops.length >= 2 ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <div className="text-[12px]" style={{ color: "rgb(var(--fg-subtle))" }}>
-            {stops.length} stops ·{" "}
-            <button
-              type="button"
-              className="hover:text-amber-300 underline-offset-2 hover:underline"
-              onClick={() => draft.clear()}
+      {(() => {
+        const validCount = stops.filter(isRoutable).length;
+        const brokenCount = stops.length - validCount;
+        if (stops.length < 2) {
+          return (
+            <p
+              className="text-[11px] italic pt-1"
+              style={{ color: "rgb(var(--fg-faint))" }}
             >
-              clear all
-            </button>
+              Add at least two stops to build a route.
+            </p>
+          );
+        }
+        return (
+          <div className="space-y-2">
+            {brokenCount > 0 && (
+              <div className="flex items-start gap-2 text-[12px] text-rose-200 bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <span>
+                  {brokenCount} stop{brokenCount === 1 ? "" : "s"} can't be
+                  routed (no address on file). Maps will skip{" "}
+                  {brokenCount === 1 ? "it" : "them"} unless you remove or
+                  replace with a custom address.
+                </span>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div
+                className="text-[12px]"
+                style={{ color: "rgb(var(--fg-subtle))" }}
+              >
+                {validCount} routable / {stops.length} total ·{" "}
+                <button
+                  type="button"
+                  className="hover:text-amber-300 underline-offset-2 hover:underline"
+                  onClick={() => draft.clear()}
+                >
+                  clear all
+                </button>
+              </div>
+              <a
+                href={googleMapsUrl(stops)}
+                target="_blank"
+                rel="noreferrer"
+                className={`btn btn-primary ${
+                  validCount < 2 ? "pointer-events-none opacity-40" : ""
+                }`}
+                aria-disabled={validCount < 2}
+              >
+                <Navigation className="w-4 h-4" />
+                Open in Google Maps
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </a>
+            </div>
           </div>
-          <a
-            href={googleMapsUrl(stops)}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-primary"
-          >
-            <Navigation className="w-4 h-4" />
-            Open in Google Maps
-            <ExternalLink className="w-3 h-3 opacity-60" />
-          </a>
-        </div>
-      ) : (
-        <p
-          className="text-[11px] italic pt-1"
-          style={{ color: "rgb(var(--fg-faint))" }}
-        >
-          Add at least two stops to build a route.
-        </p>
-      )}
+        );
+      })()}
     </div>
   );
 }
@@ -744,14 +784,28 @@ function IconChip({
 
 // ─── Google Maps deep link ─────────────────────────────────────────────
 
+/** True if this stop has enough info for Google Maps to route to it
+ *  (a real street address OR lat/lng). City-only fallbacks break the
+ *  whole route in Google's URL format, so we skip those. */
+export function isRoutable(stop: Stop): boolean {
+  if (stop.kind === "custom") return stop.address.trim().length > 0;
+  const row = DIRECTORY_BY_CODE[stop.code];
+  if (!row) return false;
+  if (row.address && row.address.trim().length > 0) return true;
+  if (row.lat != null && row.lng != null) return true;
+  return false;
+}
+
 /**
- * Builds a Google Maps directions URL containing every stop in order.
- * Uses full addresses when available, falls back to lat/lng, then city.
- * Google web Maps supports up to ~23 stops; we cap at 20 to be safe.
+ * Builds a Google Maps directions URL containing every routable stop in
+ * order. Stops missing an address AND coordinates are silently dropped
+ * (the UI flags them so the driver can fix or remove them). Capped at
+ * 20 stops to stay under Google's web Maps limit.
  */
 export function googleMapsUrl(stops: Stop[]): string {
   const tokens: string[] = [];
-  for (const s of stops.slice(0, 20)) {
+  for (const s of stops) {
+    if (!isRoutable(s)) continue;
     if (s.kind === "custom") {
       tokens.push(encodeURIComponent(s.address));
       continue;
@@ -761,16 +815,20 @@ export function googleMapsUrl(stops: Stop[]): string {
       tokens.push(encodeURIComponent(row.address));
     } else if (row?.lat != null && row?.lng != null) {
       tokens.push(`${row.lat},${row.lng}`);
-    } else if (row?.city) {
-      tokens.push(
-        encodeURIComponent(
-          `${row.city}${row.state ? ", " + row.state : ""}`,
-        ),
-      );
-    } else {
-      tokens.push(encodeURIComponent(s.code));
     }
+    if (tokens.length >= 20) break;
   }
   if (tokens.length < 2) return "https://www.google.com/maps";
   return `https://www.google.com/maps/dir/${tokens.join("/")}`;
+}
+
+/** Returns codes of stops that aren't routable, so the UI can highlight
+ *  them. Custom stops are always considered routable as long as they
+ *  have a non-empty address. */
+export function unrouteableStops(stops: Stop[]): number[] {
+  const out: number[] = [];
+  stops.forEach((s, i) => {
+    if (!isRoutable(s)) out.push(i);
+  });
+  return out;
 }

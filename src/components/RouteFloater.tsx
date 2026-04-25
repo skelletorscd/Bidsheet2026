@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useRouteDraft } from "../data/useRouteDraft";
 import { DIRECTORY, DirectoryRow } from "../data/directory.generated";
-import { googleMapsUrl } from "./RouteBuilder";
+import { googleMapsUrl, isRoutable } from "./RouteBuilder";
 
 const BY_CODE: Record<string, DirectoryRow> = Object.fromEntries(
   DIRECTORY.map((r) => [r.code, r]),
@@ -93,21 +93,32 @@ export function RouteFloater() {
             <X className="w-3.5 h-3.5 inline mr-1" />
             Clear
           </button>
-          <a
-            href={googleMapsUrl(draft.stops)}
-            target="_blank"
-            rel="noreferrer"
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 font-bold text-sm transition-all ${
-              draft.stops.length < 2
-                ? "opacity-40 pointer-events-none"
-                : "hover:bg-amber-500/15"
-            }`}
-            style={{ color: "rgb(252 211 77)" }}
-          >
-            <Navigation className="w-4 h-4" />
-            Open in Google Maps
-            <ExternalLink className="w-3 h-3 opacity-70" />
-          </a>
+          {(() => {
+            const validCount = draft.stops.filter(isRoutable).length;
+            const disabled = validCount < 2;
+            return (
+              <a
+                href={googleMapsUrl(draft.stops)}
+                target="_blank"
+                rel="noreferrer"
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 font-bold text-sm transition-all ${
+                  disabled
+                    ? "opacity-40 pointer-events-none"
+                    : "hover:bg-amber-500/15"
+                }`}
+                style={{ color: "rgb(252 211 77)" }}
+                title={
+                  disabled
+                    ? "Need at least 2 stops with a real address"
+                    : undefined
+                }
+              >
+                <Navigation className="w-4 h-4" />
+                Open in Google Maps
+                <ExternalLink className="w-3 h-3 opacity-70" />
+              </a>
+            );
+          })()}
         </div>
       </div>
     </div>
