@@ -97,7 +97,7 @@ export function LocationsView({ onStatus }: Props) {
     <div className="flex-1 overflow-y-auto pb-32 sm:pb-28 relative">
       <RouteFloater />
       <div className="p-4 sm:p-6 max-w-5xl mx-auto">
-        {/* ─── Robert Hodge credit pill ────────────────────────────── */}
+        {/* ─── Robert Hodge data-credit pill ───────────────────────── */}
         <div
           className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-4"
           style={{
@@ -111,7 +111,7 @@ export function LocationsView({ onStatus }: Props) {
             className="text-[11px]"
             style={{ color: "rgb(var(--fg-subtle))" }}
           >
-            Directory provided by{" "}
+            Address &amp; phone data collected by{" "}
             <span className="font-bold text-amber-200">Robert Hodge</span>{" "}
             <Truck className="w-3 h-3 inline-block ml-0.5 text-amber-400/70" />
           </span>
