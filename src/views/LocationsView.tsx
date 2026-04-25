@@ -240,6 +240,11 @@ function LocationCard({ row }: { row: DirectoryRow }) {
   });
   const draft = useRouteDraft();
   const inRoute = draft.has(row.code);
+  // Only routable when we have a real street address OR coordinates —
+  // matches isRoutable() in RouteBuilder so we don't promise a button
+  // we'd then have to disable.
+  const routable =
+    !!row.address || (row.lat != null && row.lng != null);
 
   return (
     <div className="card p-3 flex flex-col gap-2">
@@ -305,28 +310,30 @@ function LocationCard({ row }: { row: DirectoryRow }) {
             Start GPS
           </a>
         )}
-        <button
-          type="button"
-          onClick={() => draft.addDirectory(row.code)}
-          disabled={inRoute}
-          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
-            inRoute
-              ? "bg-emerald-500/15 text-emerald-200 border border-emerald-500/30 cursor-default"
-              : "bg-amber-500/15 text-amber-200 border border-amber-500/30 hover:bg-amber-500/25"
-          }`}
-        >
-          {inRoute ? (
-            <>
-              <Check className="w-3.5 h-3.5" />
-              In route
-            </>
-          ) : (
-            <>
-              <Plus className="w-3.5 h-3.5" />
-              Add to route
-            </>
-          )}
-        </button>
+        {routable && (
+          <button
+            type="button"
+            onClick={() => draft.addDirectory(row.code)}
+            disabled={inRoute}
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+              inRoute
+                ? "bg-emerald-500/15 text-emerald-200 border border-emerald-500/30 cursor-default"
+                : "bg-amber-500/15 text-amber-200 border border-amber-500/30 hover:bg-amber-500/25"
+            }`}
+          >
+            {inRoute ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                In route
+              </>
+            ) : (
+              <>
+                <Plus className="w-3.5 h-3.5" />
+                Add to route
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
