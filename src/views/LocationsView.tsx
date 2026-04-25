@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { RouteBuilder } from "../components/RouteBuilder";
+import { RouteFloater } from "../components/RouteFloater";
 import { useRouteDraft } from "../data/useRouteDraft";
 import { Check, Plus } from "lucide-react";
 import {
@@ -93,7 +94,8 @@ export function LocationsView({ onStatus }: Props) {
   }, [filtered]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto pb-32 sm:pb-28 relative">
+      <RouteFloater />
       <div className="p-4 sm:p-6 max-w-5xl mx-auto">
         {/* ─── Robert Hodge credit banner ──────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-bg-panel mb-5">

@@ -393,81 +393,140 @@ function CustomRouteMode() {
   return (
     <div className="space-y-3">
       {stops.length > 0 && (
-        <ul className="space-y-1.5">
-          {stops.map((stop, i) => {
-            const isCustom = stop.kind === "custom";
-            const directoryRow =
-              stop.kind === "directory"
-                ? DIRECTORY_BY_CODE[stop.code]
-                : null;
-            return (
-              <li
-                key={i}
-                className="rounded-xl px-3 py-2 flex items-center gap-2"
-                style={{
-                  background: isCustom
-                    ? "rgb(168 85 247 / 0.12)"
-                    : "rgb(var(--bg-raised) / 0.3)",
-                  border: isCustom
-                    ? "1px solid rgb(168 85 247 / 0.3)"
-                    : "1px solid rgb(var(--border) / 0.08)",
-                }}
-              >
-                <span className="tabular w-6 text-right text-[12px] font-semibold text-amber-300">
-                  {i + 1}
-                </span>
-                {isCustom ? (
-                  <div className="flex-1 min-w-0">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div
+              className="text-[10px] uppercase tracking-[0.3em] font-bold flex items-center gap-1.5"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              <Route className="w-3 h-3 text-amber-300" />
+              Today's route · {stops.length} stop{stops.length === 1 ? "" : "s"}
+            </div>
+            <button
+              type="button"
+              className="text-[11px] hover:text-rose-300 transition-colors"
+              style={{ color: "rgb(var(--fg-faint))" }}
+              onClick={() => draft.clear()}
+            >
+              Clear
+            </button>
+          </div>
+          <ol className="space-y-0">
+            {stops.map((stop, i) => {
+              const isCustom = stop.kind === "custom";
+              const directoryRow =
+                stop.kind === "directory"
+                  ? DIRECTORY_BY_CODE[stop.code]
+                  : null;
+              const last = i === stops.length - 1;
+              return (
+                <li key={i}>
+                  <div
+                    className="rounded-2xl p-3 flex items-center gap-3 relative"
+                    style={{
+                      background: isCustom
+                        ? "linear-gradient(135deg, rgb(168 85 247 / 0.18), rgb(168 85 247 / 0.05))"
+                        : "linear-gradient(135deg, rgb(245 158 11 / 0.14), rgb(var(--bg-raised) / 0.3))",
+                      border: isCustom
+                        ? "1px solid rgb(168 85 247 / 0.4)"
+                        : "1px solid rgb(245 158 11 / 0.3)",
+                    }}
+                  >
                     <div
-                      className="text-[13px] truncate font-medium"
-                      style={{ color: "rgb(var(--fg))" }}
+                      className="w-9 h-9 rounded-full flex items-center justify-center font-extrabold tabular text-base shrink-0"
+                      style={{
+                        background: isCustom
+                          ? "rgb(168 85 247 / 0.35)"
+                          : "rgb(245 158 11 / 0.35)",
+                        color: isCustom
+                          ? "rgb(233 213 255)"
+                          : "rgb(252 211 77)",
+                        border: isCustom
+                          ? "1px solid rgb(168 85 247 / 0.5)"
+                          : "1px solid rgb(245 158 11 / 0.55)",
+                        boxShadow: isCustom
+                          ? "0 0 18px rgb(168 85 247 / 0.4)"
+                          : "0 0 18px rgb(245 158 11 / 0.4)",
+                      }}
                     >
-                      {(stop as { label: string }).label}
+                      {i + 1}
                     </div>
-                    <div
-                      className="text-[11px] truncate"
-                      style={{ color: "rgb(var(--fg-subtle))" }}
-                    >
-                      {(stop as { address: string }).address}
+
+                    {isCustom ? (
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="text-[14px] truncate font-semibold"
+                          style={{ color: "rgb(var(--fg))" }}
+                        >
+                          {(stop as { label: string }).label}
+                        </div>
+                        <div
+                          className="text-[11px] truncate"
+                          style={{ color: "rgb(var(--fg-subtle))" }}
+                        >
+                          {(stop as { address: string }).address}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-amber-300 text-[15px]">
+                            {(stop as { code: string }).code}
+                          </span>
+                          <span
+                            className="text-[14px] truncate"
+                            style={{ color: "rgb(var(--fg))" }}
+                          >
+                            {directoryRow?.city}
+                            {directoryRow?.state
+                              ? `, ${directoryRow.state}`
+                              : ""}
+                          </span>
+                        </div>
+                        {directoryRow?.address && (
+                          <div
+                            className="text-[11px] truncate"
+                            style={{ color: "rgb(var(--fg-subtle))" }}
+                          >
+                            {directoryRow.address}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <IconChip
+                        onClick={() => move(i, -1)}
+                        disabled={i === 0}
+                        label="Move up"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </IconChip>
+                      <IconChip
+                        onClick={() => move(i, 1)}
+                        disabled={i === stops.length - 1}
+                        label="Move down"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </IconChip>
+                      <IconChip onClick={() => remove(i)} label="Remove">
+                        <Trash2 className="w-4 h-4" />
+                      </IconChip>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    <span className="font-mono font-semibold text-amber-300 text-[13px]">
-                      {(stop as { code: string }).code}
-                    </span>
-                    <span
-                      className="flex-1 min-w-0 truncate text-[12px]"
-                      style={{ color: "rgb(var(--fg-subtle))" }}
-                    >
-                      {directoryRow?.city}
-                      {directoryRow?.state ? `, ${directoryRow.state}` : ""}
-                    </span>
-                  </>
-                )}
-                <div className="flex items-center gap-1">
-                  <IconChip
-                    onClick={() => move(i, -1)}
-                    disabled={i === 0}
-                    label="Move up"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </IconChip>
-                  <IconChip
-                    onClick={() => move(i, 1)}
-                    disabled={i === stops.length - 1}
-                    label="Move down"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </IconChip>
-                  <IconChip onClick={() => remove(i)} label="Remove">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </IconChip>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                  {!last && (
+                    <div className="flex justify-center py-1">
+                      <ChevronDown
+                        className="w-5 h-5"
+                        style={{ color: "rgb(245 158 11 / 0.6)" }}
+                      />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       )}
 
       {/* UPS directory search */}
