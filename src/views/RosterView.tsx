@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { ROSTER, HEADLINE_COUNTS, PickInfo } from "../data/roster";
-import {
-  parseDateMDY,
-  yearsSince,
-  formatYears,
-  formatCallWindow,
-} from "../util/people";
+import { parseDateMDY, yearsSince, formatYears } from "../util/people";
 
 type Props = {
   onStatus: (s: {
@@ -135,7 +130,6 @@ export function RosterView({ onStatus }: Props) {
                 <th className="px-3 py-2.5 hidden md:table-cell">
                   Seniority date
                 </th>
-                <th className="px-3 py-2.5 hidden lg:table-cell">Call window</th>
                 <th className="px-3 py-2.5">Status</th>
               </tr>
             </thead>
@@ -169,11 +163,6 @@ export function RosterView({ onStatus }: Props) {
                           )}
                         </>
                       ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-slate-300 hidden lg:table-cell whitespace-nowrap text-[12px] tabular">
-                      {formatCallWindow(r.callWindow) ?? (
                         <span className="text-slate-600">—</span>
                       )}
                     </td>
