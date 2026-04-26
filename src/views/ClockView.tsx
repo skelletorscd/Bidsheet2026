@@ -7,9 +7,12 @@ import {
   CircleDot,
   DollarSign,
   Loader2,
+  Pencil,
   Play,
   Square,
   Timer,
+  Trash2,
+  X,
 } from "lucide-react";
 import { getSupabase, SUPABASE_CONFIGURED } from "../data/supabase";
 import { Profile, useSession } from "../data/useSession";
@@ -139,6 +142,7 @@ type ShiftRow = {
   bid_job_num: string | null;
   bid_hub: string | null;
   was_auto_punched: boolean;
+  notes: string | null;
 };
 
 function Clocked({
@@ -888,6 +892,8 @@ function Stat({
 function ShiftHistory({ userId }: { userId: string }) {
   const [shifts, setShifts] = useState<ShiftRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<ShiftRow | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const load = async () => {
     const sb = getSupabase();
@@ -895,13 +901,12 @@ function ShiftHistory({ userId }: { userId: string }) {
     const { data, error: err } = await sb
       .from("shift_history")
       .select(
-        "id, started_at, ended_at, hours_worked, hourly_rate_used, earnings, bid_job_num, bid_hub, was_auto_punched",
+        "id, started_at, ended_at, hours_worked, hourly_rate_used, earnings, bid_job_num, bid_hub, was_auto_punched, notes",
       )
       .eq("user_id", userId)
       .order("started_at", { ascending: false })
       .limit(60);
     if (err) {
-      // Fail soft — table missing or anything else; don't block the page.
       console.error("shift history load", err);
       if (!/(42P01|PGRST205|does not exist)/i.test(err.message ?? "")) {
         setError(err.message);
@@ -910,6 +915,23 @@ function ShiftHistory({ userId }: { userId: string }) {
       return;
     }
     setShifts((data ?? []) as ShiftRow[]);
+  };
+
+  const remove = async (id: string) => {
+    const sb = getSupabase();
+    if (!sb) return;
+    if (!window.confirm("Delete this shift? This can't be undone.")) return;
+    setDeleting(id);
+    const { error: err } = await sb
+      .from("shift_history")
+      .delete()
+      .eq("id", id);
+    setDeleting(null);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setShifts((curr) => curr?.filter((s) => s.id !== id) ?? curr);
   };
 
   useEffect(() => {
@@ -922,58 +944,108 @@ function ShiftHistory({ userId }: { userId: string }) {
   const buckets = bucketByWeek(shifts);
 
   return (
-    <section>
-      <h2 className="text-[11px] uppercase tracking-[0.3em] font-bold mb-2 flex items-center gap-1.5" style={{ color: "rgb(var(--fg-faint))" }}>
-        <CalendarDays className="w-3 h-3 text-amber-300" />
-        Shift history
-      </h2>
-      {shifts.length === 0 ? (
-        <div className="card p-5 text-center text-sm" style={{ color: "rgb(var(--fg-subtle))" }}>
-          No shifts logged yet. Once you clock out, this fills with your
-          week-by-week earnings.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {buckets.map((b) => (
-            <div key={b.label} className="card p-4">
-              <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "rgb(var(--fg-faint))" }}>
-                    {b.label}
+    <>
+      <section>
+        <h2
+          className="text-[11px] uppercase tracking-[0.3em] font-bold mb-2 flex items-center gap-1.5"
+          style={{ color: "rgb(var(--fg-faint))" }}
+        >
+          <CalendarDays className="w-3 h-3 text-amber-300" />
+          Shift history
+          <span
+            className="ml-auto normal-case tracking-normal text-[10px] italic"
+            style={{ color: "rgb(var(--fg-faint))" }}
+          >
+            tap edit to fix a punch-in time
+          </span>
+        </h2>
+        {shifts.length === 0 ? (
+          <div
+            className="card p-5 text-center text-sm"
+            style={{ color: "rgb(var(--fg-subtle))" }}
+          >
+            No shifts logged yet. Once you clock out, this fills with your
+            week-by-week earnings.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {buckets.map((b) => (
+              <div key={b.label} className="card p-4">
+                <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
+                  <div>
+                    <div
+                      className="text-[11px] uppercase tracking-wider font-semibold"
+                      style={{ color: "rgb(var(--fg-faint))" }}
+                    >
+                      {b.label}
+                    </div>
+                    <div
+                      className="text-[12px]"
+                      style={{ color: "rgb(var(--fg-subtle))" }}
+                    >
+                      {b.shifts.length} shift{b.shifts.length === 1 ? "" : "s"}{" "}
+                      · {round2(b.totalHours).toFixed(2)} hrs
+                    </div>
                   </div>
-                  <div className="text-[12px]" style={{ color: "rgb(var(--fg-subtle))" }}>
-                    {b.shifts.length} shift{b.shifts.length === 1 ? "" : "s"} ·{" "}
-                    {round2(b.totalHours).toFixed(2)} hrs
+                  <div className="text-right">
+                    <div className="text-2xl font-extrabold tabular text-amber-300">
+                      ${b.totalEarnings.toFixed(2)}
+                    </div>
+                    <div
+                      className="text-[11px]"
+                      style={{ color: "rgb(var(--fg-faint))" }}
+                    >
+                      earnings
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-extrabold tabular text-amber-300">
-                    ${b.totalEarnings.toFixed(2)}
-                  </div>
-                  <div className="text-[11px]" style={{ color: "rgb(var(--fg-faint))" }}>
-                    earnings
-                  </div>
-                </div>
+                <ul className="space-y-1">
+                  {b.shifts.map((s) => (
+                    <ShiftRowItem
+                      key={s.id}
+                      shift={s}
+                      onEdit={() => setEditing(s)}
+                      onDelete={() => remove(s.id)}
+                      deleting={deleting === s.id}
+                    />
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-1">
-                {b.shifts.map((s) => (
-                  <ShiftRow key={s.id} shift={s} />
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+        {error && (
+          <div className="mt-3 text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
+            {error}
+          </div>
+        )}
+      </section>
+
+      {editing && (
+        <ShiftEditModal
+          shift={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            load();
+          }}
+        />
       )}
-      {error && (
-        <div className="mt-3 text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
-          {error}
-        </div>
-      )}
-    </section>
+    </>
   );
 }
 
-function ShiftRow({ shift }: { shift: ShiftRow }) {
+function ShiftRowItem({
+  shift,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  shift: ShiftRow;
+  onEdit: () => void;
+  onDelete: () => void;
+  deleting: boolean;
+}) {
   const start = new Date(shift.started_at);
   const end = new Date(shift.ended_at);
   const breakdown = computeEarnings(
@@ -993,15 +1065,24 @@ function ShiftRow({ shift }: { shift: ShiftRow }) {
         <div className="font-semibold" style={{ color: "rgb(var(--fg))" }}>
           {start.toLocaleDateString("en-US", { weekday: "short" })}
         </div>
-        <div className="text-[10px] tabular" style={{ color: "rgb(var(--fg-faint))" }}>
+        <div
+          className="text-[10px] tabular"
+          style={{ color: "rgb(var(--fg-faint))" }}
+        >
           {start.toLocaleDateString("en-US", { month: "numeric", day: "numeric" })}
         </div>
       </div>
       <div className="flex-1 min-w-0">
         <div className="tabular truncate" style={{ color: "rgb(var(--fg))" }}>
-          {start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          {start.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })}
           {" → "}
-          {end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          {end.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })}
           {hasOt && (
             <span className="ml-1.5 text-[10px] font-bold text-fuchsia-300">
               ⚡ {breakdown.overtimeHours.toFixed(1)}h OT
@@ -1013,16 +1094,306 @@ function ShiftRow({ shift }: { shift: ShiftRow }) {
             </span>
           )}
         </div>
-        <div className="text-[10px] tabular" style={{ color: "rgb(var(--fg-faint))" }}>
+        <div
+          className="text-[10px] tabular"
+          style={{ color: "rgb(var(--fg-faint))" }}
+        >
           {shift.bid_job_num ? `${shift.bid_job_num} · ` : ""}
           {Number(shift.hours_worked).toFixed(2)} hrs · $
           {Number(shift.hourly_rate_used).toFixed(2)}/hr
         </div>
       </div>
-      <div className="font-bold tabular text-amber-300">
+      <div className="font-bold tabular text-amber-300 shrink-0">
         ${Number(shift.earnings).toFixed(2)}
       </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label="Edit shift"
+          title="Edit shift"
+          className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+          style={{
+            background: "rgb(var(--bg-hover) / 0.4)",
+            color: "rgb(var(--fg-muted))",
+          }}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          aria-label="Delete shift"
+          title="Delete shift"
+          className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-40"
+          style={{
+            background: "rgb(244 63 94 / 0.15)",
+            color: "rgb(253 164 175)",
+          }}
+        >
+          {deleting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="w-3.5 h-3.5" />
+          )}
+        </button>
+      </div>
     </li>
+  );
+}
+
+// ─── Edit modal ────────────────────────────────────────────────────────
+
+function ShiftEditModal({
+  shift,
+  onClose,
+  onSaved,
+}: {
+  shift: ShiftRow;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [start, setStart] = useState(toLocalInputValue(shift.started_at));
+  const [end, setEnd] = useState(toLocalInputValue(shift.ended_at));
+  const [rate, setRate] = useState(String(shift.hourly_rate_used));
+  const [notes, setNotes] = useState(shift.notes ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const startMs = new Date(start).getTime();
+  const endMs = new Date(end).getTime();
+  const rateNum = Number(rate);
+
+  const valid =
+    Number.isFinite(startMs) &&
+    Number.isFinite(endMs) &&
+    endMs > startMs &&
+    Number.isFinite(rateNum) &&
+    rateNum >= 0;
+
+  const elapsedMs = valid ? endMs - startMs : 0;
+  const cappedMs = Math.min(elapsedMs, FOURTEEN_HRS_MS);
+  const hoursWorked = cappedMs / 3_600_000;
+  const breakdown = computeEarnings(hoursWorked, rateNum || 0);
+
+  const save = async () => {
+    if (!valid) {
+      setError("Check your start time, end time, and rate.");
+      return;
+    }
+    const sb = getSupabase();
+    if (!sb) return;
+    setBusy(true);
+    setError(null);
+    const { error: err } = await sb
+      .from("shift_history")
+      .update({
+        started_at: new Date(startMs).toISOString(),
+        ended_at: new Date(endMs).toISOString(),
+        hours_worked: round3(hoursWorked),
+        hourly_rate_used: round2(rateNum),
+        earnings: round2(breakdown.total),
+        notes: notes.trim() || null,
+      })
+      .eq("id", shift.id);
+    setBusy(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    onSaved();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="card-strong w-full max-w-md max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="flex items-center justify-between px-5 py-4 border-b"
+          style={{ borderColor: "rgb(var(--border) / 0.1)" }}
+        >
+          <div>
+            <h2 className="text-lg font-semibold">Edit shift</h2>
+            <p
+              className="text-[11px] mt-0.5"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              Hours and earnings recompute automatically. OT after 8 h still
+              applies.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="p-1.5 hover:bg-bg-hover rounded-md"
+            style={{ color: "rgb(var(--fg-subtle))" }}
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <label className="block">
+            <span
+              className="text-[11px] uppercase tracking-wider font-semibold"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              Start time
+            </span>
+            <input
+              className="input w-full mt-1 tabular"
+              type="datetime-local"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span
+              className="text-[11px] uppercase tracking-wider font-semibold"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              End time
+            </span>
+            <input
+              className="input w-full mt-1 tabular"
+              type="datetime-local"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span
+              className="text-[11px] uppercase tracking-wider font-semibold"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              Hourly rate ($/hr)
+            </span>
+            <div className="relative mt-1">
+              <span
+                className="absolute left-3 top-1/2 -translate-y-1/2 font-bold"
+                style={{ color: "rgb(var(--fg-faint))" }}
+              >
+                $
+              </span>
+              <input
+                className="input w-full pl-6 tabular"
+                type="number"
+                step="0.01"
+                value={rate}
+                onChange={(e) => setRate(e.target.value)}
+              />
+            </div>
+          </label>
+          <label className="block">
+            <span
+              className="text-[11px] uppercase tracking-wider font-semibold"
+              style={{ color: "rgb(var(--fg-faint))" }}
+            >
+              Notes (optional)
+            </span>
+            <textarea
+              className="input w-full mt-1 h-16 resize-none"
+              placeholder="Any reminder for yourself"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
+
+          {/* Live recompute */}
+          <div
+            className="rounded-xl p-3 grid grid-cols-3 gap-2 text-center"
+            style={{
+              background: "rgb(var(--bg-raised) / 0.3)",
+              border: "1px solid rgb(var(--border) / 0.08)",
+            }}
+          >
+            <div>
+              <div
+                className="text-[10px] uppercase tracking-wider font-semibold"
+                style={{ color: "rgb(var(--fg-faint))" }}
+              >
+                Hours
+              </div>
+              <div className="font-bold tabular text-[15px] mt-0.5">
+                {valid ? hoursWorked.toFixed(2) : "—"}
+              </div>
+            </div>
+            <div>
+              <div
+                className="text-[10px] uppercase tracking-wider font-semibold"
+                style={{ color: "rgb(var(--fg-faint))" }}
+              >
+                OT hrs
+              </div>
+              <div
+                className={`font-bold tabular text-[15px] mt-0.5 ${
+                  valid && breakdown.overtimeHours > 0 ? "text-fuchsia-300" : ""
+                }`}
+              >
+                {valid ? breakdown.overtimeHours.toFixed(2) : "—"}
+              </div>
+            </div>
+            <div>
+              <div
+                className="text-[10px] uppercase tracking-wider font-semibold"
+                style={{ color: "rgb(var(--fg-faint))" }}
+              >
+                Earnings
+              </div>
+              <div className="font-bold tabular text-[15px] mt-0.5 text-amber-300">
+                {valid ? `$${breakdown.total.toFixed(2)}` : "—"}
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="flex items-start gap-2 text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-md p-2">
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
+
+        <div
+          className="flex items-center justify-end gap-2 px-5 py-3 border-t"
+          style={{ borderColor: "rgb(var(--border) / 0.1)" }}
+        >
+          <button type="button" className="btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={save}
+            disabled={busy || !valid}
+          >
+            {busy ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Pencil className="w-4 h-4" />
+            )}
+            Save changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Convert ISO timestamp → 'YYYY-MM-DDTHH:MM' for <input type=datetime-local> */
+function toLocalInputValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
   );
 }
 
