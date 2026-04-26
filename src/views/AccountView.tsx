@@ -332,8 +332,9 @@ function ClaimSection({
     // shows up without requiring a page reload.
     const sb = getSupabase();
     if (!sb) return;
+    const channelKey = `claims:${userId}:${Math.random().toString(36).slice(2, 10)}`;
     const channel: RealtimeChannel = sb
-      .channel(`claims:${userId}`)
+      .channel(channelKey)
       .on(
         "postgres_changes",
         {
@@ -552,8 +553,9 @@ function AdminPanel() {
     load();
     const sb = getSupabase();
     if (!sb) return;
+    const channelKey = `admin:name_claims:${Math.random().toString(36).slice(2, 10)}`;
     const channel: RealtimeChannel = sb
-      .channel("admin:name_claims")
+      .channel(channelKey)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "name_claims" },

@@ -23,21 +23,50 @@ export type SessionState = {
   recoveryMode: boolean;
 };
 
+// Defaults for any column that might not exist yet (older schema deploys).
+function withDefaults(raw: Partial<Profile> | null): Profile | null {
+  if (!raw) return null;
+  return {
+    id: raw.id ?? "",
+    display_name: raw.display_name ?? null,
+    photo_url: raw.photo_url ?? null,
+    is_admin: raw.is_admin ?? false,
+    claimed_driver_rank: raw.claimed_driver_rank ?? null,
+    hourly_rate: raw.hourly_rate ?? null,
+    mileage_rate: raw.mileage_rate ?? null,
+    clocked_in_at: raw.clocked_in_at ?? null,
+    alerts_enabled: raw.alerts_enabled ?? false,
+  };
+}
+
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const sb = getSupabase();
   if (!sb) return null;
-  const { data, error } = await sb
+  // Try the full column set first.
+  const FULL =
+    "id, display_name, photo_url, is_admin, claimed_driver_rank, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled";
+  let { data, error } = await sb
     .from("profiles")
-    .select(
-      "id, display_name, photo_url, is_admin, claimed_driver_rank, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled",
-    )
+    .select(FULL)
     .eq("id", userId)
     .maybeSingle();
+  // PostgREST returns 42703 when a column is missing — happens when the
+  // SQL migration in supabase/schema.sql hasn't been re-run yet. Fall
+  // back to the original column set so the rest of the app keeps working.
+  if (error && (error as { code?: string }).code === "42703") {
+    const ORIGINAL =
+      "id, display_name, photo_url, is_admin, claimed_driver_rank";
+    ({ data, error } = await sb
+      .from("profiles")
+      .select(ORIGINAL)
+      .eq("id", userId)
+      .maybeSingle());
+  }
   if (error) {
     console.error("profile load error", error);
     return null;
   }
-  return data as Profile | null;
+  return withDefaults(data as Partial<Profile> | null);
 }
 
 export function useSession(): SessionState {
@@ -84,8 +113,12 @@ export function useSession(): SessionState {
       if (active) setProfile(p);
     })();
 
+    // Unique channel name per mount — Supabase reuses channel instances
+    // by name, and re-using a name after subscribe() throws on the next
+    // .on() call (which React StrictMode triggers in dev).
+    const channelKey = `profile:${user.id}:${Math.random().toString(36).slice(2, 10)}`;
     const channel = sb
-      .channel(`profile:${user.id}`)
+      .channel(channelKey)
       .on(
         "postgres_changes",
         {

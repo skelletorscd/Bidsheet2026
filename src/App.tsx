@@ -4,6 +4,7 @@ import { TopBar } from "./components/TopBar";
 import { TabStrip } from "./components/TabStrip";
 import { SettingsModal } from "./components/SettingsModal";
 import { GlobalCountsStrip } from "./components/GlobalCountsStrip";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useGlobalCounts } from "./data/useGlobalCounts";
 import { LocationsView } from "./views/LocationsView";
 import { ContactView } from "./views/ContactView";
@@ -132,6 +133,7 @@ export default function App() {
       <GlobalCountsStrip counts={globalCounts} />
       <TabStrip />
       <div className="flex-1 flex flex-col overflow-hidden">
+        <ErrorBoundary resetKey={childKey}>
         {tab.kind === "dashboard" && (
           <DashboardView key={childKey} onStatus={reportStatus} />
         )}
@@ -161,6 +163,7 @@ export default function App() {
             onOpenAuth={() => setAuthOpen(true)}
           />
         )}
+        </ErrorBoundary>
       </div>
 
       <SettingsModal
