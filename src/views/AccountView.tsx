@@ -8,17 +8,20 @@ import {
   DollarSign,
   Loader2,
   LogOut,
+  Map,
   Save,
   Shield,
   Truck,
   UserCircle,
   X,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { getSupabase, SUPABASE_CONFIGURED } from "../data/supabase";
 import { Profile, signOut, useSession } from "../data/useSession";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { ROSTER, ALL_BIDS, SnapshotBid } from "../data/roster";
 import { namesMatch, normalizeName } from "../parse/names";
+import { useRouteDraft } from "../data/useRouteDraft";
 
 type Props = {
   onStatus: (s: {
@@ -340,6 +343,29 @@ function BidAssignmentSection({
     );
   }, [rosterRow]);
 
+  const draft = useRouteDraft();
+  const navigate = useNavigate();
+
+  const loadBidIntoRoute = () => {
+    if (!pickedBid) return;
+    // Collect unique location codes across every leg of the bid in route order.
+    const seen = new Set<string>();
+    const codes: string[] = [];
+    for (const leg of pickedBid.legs) {
+      for (const tok of leg.routeTokens) {
+        if (tok.kind !== "location") continue;
+        if (seen.has(tok.code)) continue;
+        seen.add(tok.code);
+        codes.push(tok.code);
+      }
+    }
+    if (codes.length < 2) return;
+    // Replace the draft with this bid's stops.
+    draft.clear();
+    for (const c of codes) draft.addDirectory(c);
+    navigate("/?tab=locations");
+  };
+
   const [requests, setRequests] = useState<BidChangeRequest[]>([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -464,7 +490,18 @@ function BidAssignmentSection({
                 )}
               </div>
             </div>
-            <div className="text-right shrink-0">
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+              {pickedBid && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={loadBidIntoRoute}
+                  title="Load this route into the trip planner with all stops in order"
+                >
+                  <Map className="w-4 h-4" />
+                  Map this route
+                </button>
+              )}
               <button
                 type="button"
                 className="btn"
