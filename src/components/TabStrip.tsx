@@ -1,7 +1,7 @@
 import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
-  Clock,
+  DollarSign,
   Home,
   ListOrdered,
   Mail,
@@ -12,7 +12,7 @@ import {
 
 const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   dashboard: Home,
-  clock: Clock,
+  clock: DollarSign,
   account: UserCircle,
   seniority: ListOrdered,
   onCallToledo: Phone,

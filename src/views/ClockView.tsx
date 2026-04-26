@@ -145,6 +145,13 @@ function Clocked({
     ? new Date(profile.clocked_in_at).getTime()
     : null;
 
+  const friendlyError = (err: { message?: string; code?: string }): string => {
+    if (err.code === "42703" || (err.message ?? "").includes("does not exist")) {
+      return "Database isn't fully migrated yet — Samuel needs to re-run the latest schema in Supabase.";
+    }
+    return err.message ?? "Something went wrong.";
+  };
+
   const clockIn = async (atTs?: number) => {
     const sb = getSupabase();
     if (!sb) return;
@@ -156,7 +163,7 @@ function Clocked({
       .update({ clocked_in_at: iso })
       .eq("id", userId);
     setBusy(null);
-    if (err) setError(err.message);
+    if (err) setError(friendlyError(err));
   };
 
   const clockOut = async () => {
@@ -169,7 +176,7 @@ function Clocked({
       .update({ clocked_in_at: null })
       .eq("id", userId);
     setBusy(null);
-    if (err) setError(err.message);
+    if (err) setError(friendlyError(err));
   };
 
   const saveRates = async () => {
@@ -187,7 +194,7 @@ function Clocked({
       .update({ hourly_rate: n })
       .eq("id", userId);
     setBusy(null);
-    if (err) setError(err.message);
+    if (err) setError(friendlyError(err));
   };
 
   const toggleAlerts = async () => {
@@ -208,7 +215,7 @@ function Clocked({
       .update({ alerts_enabled: next })
       .eq("id", userId);
     setBusy(null);
-    if (err) setError(err.message);
+    if (err) setError(friendlyError(err));
   };
 
   const bidStartToday = useMemo(() => {
@@ -259,7 +266,7 @@ function Clocked({
           <div
             className="text-[11px] uppercase tracking-[0.4em] font-bold text-amber-300"
           >
-            Clock
+            Pay Clock · live earnings
           </div>
           <h1
             className="mt-1 text-3xl sm:text-5xl font-extrabold tracking-tight"
@@ -267,6 +274,14 @@ function Clocked({
           >
             {clockedInAt ? "On the clock." : "Ready to roll?"}
           </h1>
+          <p
+            className="mt-2 text-sm sm:text-base max-w-xl leading-relaxed"
+            style={{ color: "rgb(var(--fg-subtle))" }}
+          >
+            Punch in and watch your dollars-earned tick up live, gas-pump
+            style. Tracks your shift, warns at the 10 h mark, auto-clocks
+            you out at the 14 h DOT cap.
+          </p>
         </div>
 
         {/* Rate setup (shown once until a rate is saved) */}

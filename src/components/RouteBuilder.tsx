@@ -566,7 +566,7 @@ function CustomRouteMode() {
         {search && (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-64 overflow-y-auto mt-1.5">
             {options.map((r) => (
-              <li key={r.code}>
+              <li key={`${r.code}-${r.slic ?? ""}`}>
                 <button
                   type="button"
                   onClick={() => addDirectory(r.code)}

@@ -77,8 +77,8 @@ export const TAB_SOURCES: TabSource[] = [
   },
   {
     key: "clock",
-    label: "Clock",
-    shortLabel: "Clock",
+    label: "Pay Clock",
+    shortLabel: "Pay",
     hub: null,
     gid: null,
     kind: "clock",
