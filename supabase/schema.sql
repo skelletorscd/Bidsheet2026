@@ -200,6 +200,34 @@ create index if not exists shift_history_user_started_idx
   on public.shift_history (user_id, started_at desc);
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- 3c. bid_change_requests  ── driver asks admin to update what bid is
+--     attached to their account (e.g. they dropped off TN01 and picked
+--     up COL2). Admin reviews in the Account-page admin panel.
+-- ─────────────────────────────────────────────────────────────────────────
+create table if not exists public.bid_change_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  driver_rank integer,
+  current_job_num text,
+  current_hub text,
+  new_job_num text,
+  new_hub text,
+  is_drop_off boolean not null default false,
+  reason text,
+  status text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected')),
+  decided_by uuid references auth.users (id),
+  decided_at timestamptz,
+  decision_notes text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists bid_change_requests_status_idx
+  on public.bid_change_requests (status);
+create index if not exists bid_change_requests_user_idx
+  on public.bid_change_requests (user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- 4. Row-Level Security
 -- ─────────────────────────────────────────────────────────────────────────
 
@@ -223,6 +251,25 @@ alter table public.driver_status enable row level security;
 alter table public.driver_status_events enable row level security;
 alter table public.shift_history enable row level security;
 alter table public.driver_payclock enable row level security;
+alter table public.bid_change_requests enable row level security;
+
+-- bid_change_requests: drivers can read/insert their own; admins read all + decide.
+drop policy if exists "bid req self read" on public.bid_change_requests;
+create policy "bid req self read" on public.bid_change_requests
+  for select using (auth.uid() = user_id or public.is_admin(auth.uid()));
+
+drop policy if exists "bid req self insert" on public.bid_change_requests;
+create policy "bid req self insert" on public.bid_change_requests
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "bid req admin decide" on public.bid_change_requests;
+create policy "bid req admin decide" on public.bid_change_requests
+  for update using (public.is_admin(auth.uid()))
+             with check (public.is_admin(auth.uid()));
+
+drop policy if exists "bid req self cancel" on public.bid_change_requests;
+create policy "bid req self cancel" on public.bid_change_requests
+  for delete using (auth.uid() = user_id and status = 'pending');
 
 -- driver_payclock: only the owner can read/write; admins can read all.
 drop policy if exists "payclock self read" on public.driver_payclock;
@@ -401,6 +448,9 @@ begin
     exception when duplicate_object then null; end;
     begin
       alter publication supabase_realtime add table public.driver_payclock;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.bid_change_requests;
     exception when duplicate_object then null; end;
   end if;
 end $$;
