@@ -128,6 +128,29 @@ create index if not exists driver_status_events_rank_idx
   on public.driver_status_events (driver_rank, created_at desc);
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- 3b. shift_history  ── one row per completed shift, used by the Pay Clock
+--     to show today/this-week/past-weeks earnings.
+-- ─────────────────────────────────────────────────────────────────────────
+create table if not exists public.shift_history (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  driver_rank integer,
+  bid_job_num text,
+  bid_hub text,
+  started_at timestamptz not null,
+  ended_at timestamptz not null,
+  hours_worked numeric(6, 3) not null,
+  hourly_rate_used numeric(6, 2) not null,
+  earnings numeric(8, 2) not null,
+  was_auto_punched boolean not null default false,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists shift_history_user_started_idx
+  on public.shift_history (user_id, started_at desc);
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- 4. Row-Level Security
 -- ─────────────────────────────────────────────────────────────────────────
 
@@ -149,6 +172,7 @@ alter table public.profiles enable row level security;
 alter table public.name_claims enable row level security;
 alter table public.driver_status enable row level security;
 alter table public.driver_status_events enable row level security;
+alter table public.shift_history enable row level security;
 
 -- profiles: everyone can read (coworkers need to see names + photos);
 -- only the owner can update their own profile; admins can update anyone.
@@ -234,6 +258,24 @@ create policy "events insert self or admin" on public.driver_status_events
     )
   );
 
+-- shift_history: a user can read + insert their own; admin sees all.
+drop policy if exists "shift read self" on public.shift_history;
+create policy "shift read self" on public.shift_history
+  for select using (auth.uid() = user_id or public.is_admin(auth.uid()));
+
+drop policy if exists "shift insert self" on public.shift_history;
+create policy "shift insert self" on public.shift_history
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "shift update self" on public.shift_history;
+create policy "shift update self" on public.shift_history
+  for update using (auth.uid() = user_id or public.is_admin(auth.uid()))
+             with check (auth.uid() = user_id or public.is_admin(auth.uid()));
+
+drop policy if exists "shift delete self" on public.shift_history;
+create policy "shift delete self" on public.shift_history
+  for delete using (auth.uid() = user_id or public.is_admin(auth.uid()));
+
 -- ─────────────────────────────────────────────────────────────────────────
 -- 5. Storage bucket for profile photos
 -- ─────────────────────────────────────────────────────────────────────────
@@ -286,6 +328,9 @@ begin
     exception when duplicate_object then null; end;
     begin
       alter publication supabase_realtime add table public.driver_status_events;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.shift_history;
     exception when duplicate_object then null; end;
   end if;
 end $$;

@@ -3,8 +3,8 @@ import {
   AlertCircle,
   BellOff,
   BellRing,
+  CalendarDays,
   CircleDot,
-  Clock,
   DollarSign,
   Loader2,
   Play,
@@ -13,8 +13,7 @@ import {
 } from "lucide-react";
 import { getSupabase, SUPABASE_CONFIGURED } from "../data/supabase";
 import { Profile, useSession } from "../data/useSession";
-import { ROSTER } from "../data/roster";
-import { ALL_BIDS } from "../data/roster";
+import { ROSTER, ALL_BIDS, SnapshotBid } from "../data/roster";
 
 type Props = {
   onStatus: (s: {
@@ -54,27 +53,31 @@ export function ClockView({ onStatus, onOpenAuth }: Props) {
   if (!session.user) {
     return <SignedOut onOpenAuth={onOpenAuth} />;
   }
-  return <Clocked profile={session.profile} userId={session.user.id} />;
+  return (
+    <Clocked
+      profile={session.profile}
+      userId={session.user.id}
+      refreshProfile={session.refreshProfile}
+    />
+  );
 }
-
-// ─── Signed-out ────────────────────────────────────────────────────────
 
 function SignedOut({ onOpenAuth }: { onOpenAuth: () => void }) {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-xl mx-auto p-6 sm:p-10 text-center">
         <div className="inline-flex w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 items-center justify-center mb-4">
-          <Clock className="w-8 h-8 text-amber-300" />
+          <DollarSign className="w-8 h-8 text-amber-300" />
         </div>
         <h1
           className="text-2xl sm:text-3xl font-extrabold"
           style={{ color: "rgb(var(--fg))" }}
         >
-          Clock in, watch the money roll
+          Pay Clock — punch in, watch the dollars roll
         </h1>
         <p className="mt-2 leading-relaxed" style={{ color: "rgb(var(--fg-subtle))" }}>
-          Sign in to track your shift and see your earnings tick up live, like
-          a gas-pump display.
+          Sign in to track shifts, see live earnings, and review week-by-week
+          history.
         </p>
         <button
           onClick={onOpenAuth}
@@ -107,18 +110,31 @@ function Empty({ text }: { text: string }) {
 
 // ─── Signed-in clock ───────────────────────────────────────────────────
 
+type ShiftRow = {
+  id: string;
+  started_at: string;
+  ended_at: string;
+  hours_worked: number;
+  hourly_rate_used: number;
+  earnings: number;
+  bid_job_num: string | null;
+  bid_hub: string | null;
+  was_auto_punched: boolean;
+};
+
 function Clocked({
   profile,
   userId,
+  refreshProfile,
 }: {
   profile: Profile | null;
   userId: string;
+  refreshProfile: () => Promise<void>;
 }) {
   const hourly = profile?.hourly_rate ?? null;
   const alertsOn = profile?.alerts_enabled ?? false;
 
-  // The driver's bid (if any) so we can show route + offer auto-start.
-  const assignedBid = useMemo(() => {
+  const assignedBid = useMemo<SnapshotBid | null>(() => {
     if (!profile?.claimed_driver_rank) return null;
     const rank = profile.claimed_driver_rank;
     const rosterRow = ROSTER.find((r) => r.rank === rank);
@@ -149,6 +165,9 @@ function Clocked({
     if (err.code === "42703" || (err.message ?? "").includes("does not exist")) {
       return "Database isn't fully migrated yet — Samuel needs to re-run the latest schema in Supabase.";
     }
+    if (err.code === "PGRST204" || (err.message ?? "").includes("Could not find")) {
+      return "Shift-history table is missing — re-run supabase/schema.sql so it gets created.";
+    }
     return err.message ?? "Something went wrong.";
   };
 
@@ -162,21 +181,60 @@ function Clocked({
       .from("profiles")
       .update({ clocked_in_at: iso })
       .eq("id", userId);
+    if (err) {
+      setBusy(null);
+      setError(friendlyError(err));
+      return;
+    }
+    await refreshProfile();
     setBusy(null);
-    if (err) setError(friendlyError(err));
   };
 
-  const clockOut = async () => {
+  const clockOut = async (autoPunched = false) => {
     const sb = getSupabase();
-    if (!sb) return;
+    if (!sb || !clockedInAt) return;
     setBusy("out");
     setError(null);
-    const { error: err } = await sb
+    const endedAt = autoPunched ? clockedInAt + FOURTEEN_HRS_MS : Date.now();
+    const elapsedMs = Math.max(0, endedAt - clockedInAt);
+    const cappedMs = Math.min(elapsedMs, FOURTEEN_HRS_MS);
+    const hoursWorked = cappedMs / 3_600_000;
+    const rate = hourly ?? 0;
+    const earnings = hoursWorked * rate;
+
+    // Log the shift first so we don't lose it if the profile update fails.
+    if (rate > 0 && cappedMs > 60_000) {
+      const { error: histErr } = await sb.from("shift_history").insert({
+        user_id: userId,
+        driver_rank: profile?.claimed_driver_rank ?? null,
+        bid_job_num: assignedBid?.jobNum ?? null,
+        bid_hub: assignedBid?.hub ?? null,
+        started_at: new Date(clockedInAt).toISOString(),
+        ended_at: new Date(clockedInAt + cappedMs).toISOString(),
+        hours_worked: round3(hoursWorked),
+        hourly_rate_used: rate,
+        earnings: round2(earnings),
+        was_auto_punched: autoPunched,
+      });
+      if (histErr) {
+        // Swallow the missing-table error so the user can still clock out.
+        if (!/(42P01|PGRST205|does not exist)/i.test(histErr.message ?? "")) {
+          console.error("shift insert", histErr);
+        }
+      }
+    }
+
+    const { error: profErr } = await sb
       .from("profiles")
       .update({ clocked_in_at: null })
       .eq("id", userId);
+    if (profErr) {
+      setBusy(null);
+      setError(friendlyError(profErr));
+      return;
+    }
+    await refreshProfile();
     setBusy(null);
-    if (err) setError(friendlyError(err));
   };
 
   const saveRates = async () => {
@@ -193,8 +251,13 @@ function Clocked({
       .from("profiles")
       .update({ hourly_rate: n })
       .eq("id", userId);
+    if (err) {
+      setBusy(null);
+      setError(friendlyError(err));
+      return;
+    }
+    await refreshProfile();
     setBusy(null);
-    if (err) setError(friendlyError(err));
   };
 
   const toggleAlerts = async () => {
@@ -214,8 +277,13 @@ function Clocked({
       .from("profiles")
       .update({ alerts_enabled: next })
       .eq("id", userId);
+    if (err) {
+      setBusy(null);
+      setError(friendlyError(err));
+      return;
+    }
+    await refreshProfile();
     setBusy(null);
-    if (err) setError(friendlyError(err));
   };
 
   const bidStartToday = useMemo(() => {
@@ -223,7 +291,7 @@ function Clocked({
     const m = assignedBid.startTime24.match(/^(\d{1,2}):(\d{2})$/);
     if (!m) return null;
     const now = new Date();
-    const ts = new Date(
+    return new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate(),
@@ -232,11 +300,32 @@ function Clocked({
       0,
       0,
     ).getTime();
-    return ts;
   }, [assignedBid]);
 
-  // Scheduled alerts: once at 10 h (soft), once at ~13.5 h (heads-up), and
-  // auto-punch-out at 14 h if the row still says clocked_in.
+  // Auto-start the clock at the bid's start time today, if the driver:
+  // - has a claimed bid + start time
+  // - has set their hourly rate
+  // - hasn't already clocked in
+  // - has the app open (we only auto-start if currentTime is within ±2 min
+  //   of the bid start, so it doesn't surprise them on day-old data)
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!bidStartToday || !hourly || clockedInAt || autoStartedRef.current) return;
+    const tick = () => {
+      const now = Date.now();
+      const within = Math.abs(now - bidStartToday) < 2 * 60 * 1000;
+      if (within && now >= bidStartToday) {
+        autoStartedRef.current = true;
+        clockIn(bidStartToday);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bidStartToday, hourly, clockedInAt]);
+
+  // Scheduled alerts for the active shift
   useEffect(() => {
     if (!clockedInAt || !alertsOn) return;
     const now = Date.now();
@@ -251,7 +340,7 @@ function Clocked({
     schedule(FOURTEEN_HRS_MS - 30 * 60 * 1000, "30 min to the 14-hr cap", "30 minutes until the 14-hr DOT cap — start wrapping up.");
     schedule(FOURTEEN_HRS_MS, "14-hr cap reached", "You've hit the 14-hr cap. Clocking you out now — adjust your time if needed.");
     const autoPunchId = window.setTimeout(() => {
-      clockOut();
+      clockOut(true);
     }, Math.max(0, FOURTEEN_HRS_MS - elapsed));
     timers.push(autoPunchId);
     return () => timers.forEach((t) => window.clearTimeout(t));
@@ -261,11 +350,8 @@ function Clocked({
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-5">
-        {/* Headline */}
         <div>
-          <div
-            className="text-[11px] uppercase tracking-[0.4em] font-bold text-amber-300"
-          >
+          <div className="text-[11px] uppercase tracking-[0.4em] font-bold text-amber-300">
             Pay Clock · live earnings
           </div>
           <h1
@@ -278,13 +364,13 @@ function Clocked({
             className="mt-2 text-sm sm:text-base max-w-xl leading-relaxed"
             style={{ color: "rgb(var(--fg-subtle))" }}
           >
-            Punch in and watch your dollars-earned tick up live, gas-pump
-            style. Tracks your shift, warns at the 10 h mark, auto-clocks
+            Punch in and watch your dollars-earned tick up live. If you've
+            claimed a bid, the clock auto-starts at your bid's posted start
+            time. Tracks your shift, warns at the 10 h mark, auto-clocks
             you out at the 14 h DOT cap.
           </p>
         </div>
 
-        {/* Rate setup (shown once until a rate is saved) */}
         {hourly == null && (
           <section className="card-strong p-5">
             <div className="flex items-center gap-2 mb-2">
@@ -292,8 +378,8 @@ function Clocked({
               <h2 className="font-semibold">Set your hourly rate</h2>
             </div>
             <p className="text-sm mb-3" style={{ color: "rgb(var(--fg-subtle))" }}>
-              Top feeder rate is around $49/hr depending on your progression. Use
-              whatever matches your pay stub.
+              Top feeder rate is around $49/hr depending on your progression.
+              Use whatever matches your pay stub.
             </p>
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
@@ -330,14 +416,13 @@ function Clocked({
           </section>
         )}
 
-        {/* Clock state */}
         {hourly != null && (
           <>
             {clockedInAt ? (
               <ActiveClock
                 clockedInAt={clockedInAt}
                 hourly={hourly}
-                onClockOut={clockOut}
+                onClockOut={() => clockOut(false)}
                 busy={busy === "out"}
               />
             ) : (
@@ -353,7 +438,6 @@ function Clocked({
           </>
         )}
 
-        {/* Rate editor (when already set) */}
         {hourly != null && (
           <section className="card p-5">
             <h3
@@ -394,7 +478,6 @@ function Clocked({
           </section>
         )}
 
-        {/* Alerts */}
         <section className="card p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -432,12 +515,14 @@ function Clocked({
             <span>{error}</span>
           </div>
         )}
+
+        <ShiftHistory userId={userId} />
       </div>
     </div>
   );
 }
 
-// ─── Idle (not clocked in) ─────────────────────────────────────────────
+// ─── Idle ──────────────────────────────────────────────────────────────
 
 function IdleClock({
   hourly,
@@ -448,7 +533,7 @@ function IdleClock({
   busy,
 }: {
   hourly: number;
-  assignedBid: (typeof ALL_BIDS)[number] | null;
+  assignedBid: SnapshotBid | null;
   bidStartToday: number | null;
   onClockInNow: () => void;
   onClockInAtBid: () => void;
@@ -480,6 +565,15 @@ function IdleClock({
               >
                 {assignedBid.startTime24}
               </span>
+              {bidInFuture && (
+                <>
+                  {" "}
+                  · auto-clock-in in{" "}
+                  <span style={{ color: "rgb(var(--fg))" }}>
+                    {formatInX(bidStartToday! - now)}
+                  </span>
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -523,16 +617,6 @@ function IdleClock({
           )
         </button>
       )}
-      {bidInFuture && (
-        <p
-          className="text-[12px] text-center mt-3 italic"
-          style={{ color: "rgb(var(--fg-faint))" }}
-        >
-          Your bid starts in{" "}
-          {formatInX(bidStartToday! - now)} — clock will auto-start if you
-          open the app then, or you can clock in now.
-        </p>
-      )}
 
       <p
         className="text-[12px] text-center mt-4"
@@ -544,7 +628,7 @@ function IdleClock({
   );
 }
 
-// ─── Active clock ──────────────────────────────────────────────────────
+// ─── Active ────────────────────────────────────────────────────────────
 
 function ActiveClock({
   clockedInAt,
@@ -560,7 +644,6 @@ function ActiveClock({
   const [now, setNow] = useState(Date.now());
   const rafRef = useRef<number | null>(null);
 
-  // Requestanimationframe-driven tick for the smooth gas-pump effect.
   useEffect(() => {
     let last = performance.now();
     const tick = () => {
@@ -586,7 +669,6 @@ function ActiveClock({
   const pastTen = elapsedMs >= TEN_HRS_MS;
   const pastFourteen = elapsedMs >= FOURTEEN_HRS_MS;
 
-  // Gas-pump-style rapid digits: hundredths of a cent.
   const earningsStr = earnings.toFixed(4);
 
   return (
@@ -597,16 +679,13 @@ function ActiveClock({
           "radial-gradient(ellipse 80% 80% at 50% -10%, rgb(245 158 11 / 0.18), rgb(var(--bg-panel) / 0.08))",
       }}
     >
-      {/* Live indicator */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
           </span>
-          <span
-            className="text-[10px] uppercase tracking-[0.4em] font-bold text-emerald-300"
-          >
+          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-emerald-300">
             On the clock
           </span>
         </div>
@@ -624,7 +703,6 @@ function ActiveClock({
         </div>
       </div>
 
-      {/* The big money counter */}
       <div className="text-center py-4">
         <div
           className="inline-flex items-baseline gap-1 tabular font-mono font-extrabold tracking-tight"
@@ -648,14 +726,9 @@ function ActiveClock({
         </div>
       </div>
 
-      {/* Elapsed + rate */}
       <div className="grid grid-cols-3 gap-3 mt-5">
         <Stat label="Elapsed" value={`${hours}h ${String(minutes).padStart(2, "0")}m`} sub={`${String(seconds).padStart(2, "0")}s`} />
-        <Stat
-          label="Rate"
-          value={`$${hourly.toFixed(2)}`}
-          sub="per hour"
-        />
+        <Stat label="Rate" value={`$${hourly.toFixed(2)}`} sub="per hour" />
         <Stat
           label="Next cap"
           value={pastFourteen ? "14 h ✓" : pastTen ? "14h limit" : "10h soft"}
@@ -665,20 +738,16 @@ function ActiveClock({
       </div>
 
       {pastTen && !pastFourteen && (
-        <div
-          className="mt-4 flex items-start gap-2 text-amber-200 text-[12px] bg-amber-500/10 border border-amber-500/30 rounded-xl p-3"
-        >
+        <div className="mt-4 flex items-start gap-2 text-amber-200 text-[12px] bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
           <Timer className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <span>
-            Past your 10-hour soft mark. You can keep going up to 14 h
-            (DOT cap). After that you'll be auto-punched out.
+            Past your 10-hour soft mark. You can keep going up to 14 h (DOT
+            cap). After that you'll be auto-punched out.
           </span>
         </div>
       )}
       {pastFourteen && (
-        <div
-          className="mt-4 flex items-start gap-2 text-rose-300 text-[12px] bg-rose-500/10 border border-rose-500/30 rounded-xl p-3"
-        >
+        <div className="mt-4 flex items-start gap-2 text-rose-300 text-[12px] bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
           <CircleDot className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <span>
             14-hour cap reached. Earnings display is capped at 14 hrs even
@@ -704,7 +773,7 @@ function ActiveClock({
         ) : (
           <span className="inline-flex items-center gap-2">
             <Square className="w-4 h-4" />
-            Clock out
+            Clock out & save shift
           </span>
         )}
       </button>
@@ -756,7 +825,199 @@ function Stat({
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────
+// ─── History ───────────────────────────────────────────────────────────
+
+function ShiftHistory({ userId }: { userId: string }) {
+  const [shifts, setShifts] = useState<ShiftRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    const sb = getSupabase();
+    if (!sb) return;
+    const { data, error: err } = await sb
+      .from("shift_history")
+      .select(
+        "id, started_at, ended_at, hours_worked, hourly_rate_used, earnings, bid_job_num, bid_hub, was_auto_punched",
+      )
+      .eq("user_id", userId)
+      .order("started_at", { ascending: false })
+      .limit(60);
+    if (err) {
+      // Fail soft — table missing or anything else; don't block the page.
+      console.error("shift history load", err);
+      if (!/(42P01|PGRST205|does not exist)/i.test(err.message ?? "")) {
+        setError(err.message);
+      }
+      setShifts([]);
+      return;
+    }
+    setShifts((data ?? []) as ShiftRow[]);
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  if (shifts == null) return null;
+
+  const buckets = bucketByWeek(shifts);
+
+  return (
+    <section>
+      <h2 className="text-[11px] uppercase tracking-[0.3em] font-bold mb-2 flex items-center gap-1.5" style={{ color: "rgb(var(--fg-faint))" }}>
+        <CalendarDays className="w-3 h-3 text-amber-300" />
+        Shift history
+      </h2>
+      {shifts.length === 0 ? (
+        <div className="card p-5 text-center text-sm" style={{ color: "rgb(var(--fg-subtle))" }}>
+          No shifts logged yet. Once you clock out, this fills with your
+          week-by-week earnings.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {buckets.map((b) => (
+            <div key={b.label} className="card p-4">
+              <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "rgb(var(--fg-faint))" }}>
+                    {b.label}
+                  </div>
+                  <div className="text-[12px]" style={{ color: "rgb(var(--fg-subtle))" }}>
+                    {b.shifts.length} shift{b.shifts.length === 1 ? "" : "s"} ·{" "}
+                    {round2(b.totalHours).toFixed(2)} hrs
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-extrabold tabular text-amber-300">
+                    ${b.totalEarnings.toFixed(2)}
+                  </div>
+                  <div className="text-[11px]" style={{ color: "rgb(var(--fg-faint))" }}>
+                    earnings
+                  </div>
+                </div>
+              </div>
+              <ul className="space-y-1">
+                {b.shifts.map((s) => (
+                  <ShiftRow key={s.id} shift={s} />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+      {error && (
+        <div className="mt-3 text-rose-300 text-xs bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
+          {error}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ShiftRow({ shift }: { shift: ShiftRow }) {
+  const start = new Date(shift.started_at);
+  const end = new Date(shift.ended_at);
+  return (
+    <li
+      className="rounded-lg px-3 py-2 flex items-center gap-3 text-[12px]"
+      style={{
+        background: "rgb(var(--bg-raised) / 0.3)",
+        border: "1px solid rgb(var(--border) / 0.06)",
+      }}
+    >
+      <div className="w-14 shrink-0">
+        <div className="font-semibold" style={{ color: "rgb(var(--fg))" }}>
+          {start.toLocaleDateString("en-US", { weekday: "short" })}
+        </div>
+        <div className="text-[10px] tabular" style={{ color: "rgb(var(--fg-faint))" }}>
+          {start.toLocaleDateString("en-US", { month: "numeric", day: "numeric" })}
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="tabular truncate" style={{ color: "rgb(var(--fg))" }}>
+          {start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          {" → "}
+          {end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          {shift.was_auto_punched && (
+            <span className="ml-1.5 text-[10px] text-rose-300/80">
+              · auto-out
+            </span>
+          )}
+        </div>
+        <div className="text-[10px] tabular" style={{ color: "rgb(var(--fg-faint))" }}>
+          {shift.bid_job_num
+            ? `${shift.bid_job_num} · `
+            : ""}
+          {shift.hours_worked.toFixed(2)} hrs · ${shift.hourly_rate_used.toFixed(
+            2,
+          )}
+          /hr
+        </div>
+      </div>
+      <div className="font-bold tabular text-amber-300">
+        ${shift.earnings.toFixed(2)}
+      </div>
+    </li>
+  );
+}
+
+type WeekBucket = {
+  label: string;
+  weekStart: number; // ms
+  shifts: ShiftRow[];
+  totalHours: number;
+  totalEarnings: number;
+};
+
+function bucketByWeek(shifts: ShiftRow[]): WeekBucket[] {
+  const buckets = new Map<number, WeekBucket>();
+  for (const s of shifts) {
+    const start = new Date(s.started_at);
+    const sun = startOfWeek(start);
+    const key = sun.getTime();
+    let b = buckets.get(key);
+    if (!b) {
+      b = {
+        weekStart: key,
+        label: weekLabel(sun),
+        shifts: [],
+        totalHours: 0,
+        totalEarnings: 0,
+      };
+      buckets.set(key, b);
+    }
+    b.shifts.push(s);
+    b.totalHours += Number(s.hours_worked) || 0;
+    b.totalEarnings += Number(s.earnings) || 0;
+  }
+  return [...buckets.values()].sort((a, b) => b.weekStart - a.weekStart);
+}
+
+function startOfWeek(d: Date): Date {
+  const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  out.setDate(out.getDate() - out.getDay()); // Sunday
+  return out;
+}
+
+function weekLabel(sun: Date): string {
+  const today = startOfWeek(new Date()).getTime();
+  const lastWeek = today - 7 * 86_400_000;
+  if (sun.getTime() === today) return "This week";
+  if (sun.getTime() === lastWeek) return "Last week";
+  const sat = new Date(sun);
+  sat.setDate(sat.getDate() + 6);
+  return `${sun.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${sat.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+function round3(n: number): number {
+  return Math.round(n * 1000) / 1000;
+}
 
 function formatInX(ms: number): string {
   if (ms <= 0) return "now";

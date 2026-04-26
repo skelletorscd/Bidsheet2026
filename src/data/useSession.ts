@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { getSupabase, SUPABASE_CONFIGURED } from "./supabase";
 
@@ -21,6 +21,9 @@ export type SessionState = {
   configured: boolean;
   /** True when the user just arrived via a password-recovery link. */
   recoveryMode: boolean;
+  /** Manually re-fetch the profile (use after a write completes; realtime
+   *  may not be set up for some Supabase deploys). */
+  refreshProfile: () => Promise<void>;
 };
 
 // Defaults for any column that might not exist yet (older schema deploys).
@@ -74,6 +77,15 @@ export function useSession(): SessionState {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(SUPABASE_CONFIGURED);
   const [recoveryMode, setRecoveryMode] = useState(false);
+  const userIdRef = useRef<string | null>(null);
+  userIdRef.current = user?.id ?? null;
+
+  const refreshProfile = useCallback(async () => {
+    const id = userIdRef.current;
+    if (!id) return;
+    const p = await fetchProfile(id);
+    setProfile(p);
+  }, []);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -146,6 +158,7 @@ export function useSession(): SessionState {
     loading,
     configured: SUPABASE_CONFIGURED,
     recoveryMode,
+    refreshProfile,
   };
 }
 
