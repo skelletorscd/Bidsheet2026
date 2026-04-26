@@ -25,8 +25,27 @@ type Props = {
   onOpenAuth: () => void;
 };
 
+const EIGHT_HRS_MS = 8 * 60 * 60 * 1000;
 const TEN_HRS_MS = 10 * 60 * 60 * 1000;
 const FOURTEEN_HRS_MS = 14 * 60 * 60 * 1000;
+const OT_MULTIPLIER = 1.5;
+
+/** Splits hours into straight-time (first 8) and time-and-a-half (rest)
+ *  per the UPS Teamsters supplemental — applied to both the live
+ *  earnings counter and the shift_history row. */
+function computeEarnings(hours: number, rate: number) {
+  const regularHours = Math.min(hours, 8);
+  const overtimeHours = Math.max(0, hours - 8);
+  const regular = regularHours * rate;
+  const overtime = overtimeHours * rate * OT_MULTIPLIER;
+  return {
+    regular,
+    overtime,
+    total: regular + overtime,
+    regularHours,
+    overtimeHours,
+  };
+}
 
 export function ClockView({ onStatus, onOpenAuth }: Props) {
   const session = useSession();
@@ -200,7 +219,7 @@ function Clocked({
     const cappedMs = Math.min(elapsedMs, FOURTEEN_HRS_MS);
     const hoursWorked = cappedMs / 3_600_000;
     const rate = hourly ?? 0;
-    const earnings = hoursWorked * rate;
+    const { total: earnings } = computeEarnings(hoursWorked, rate);
 
     // Log the shift first so we don't lose it if the profile update fails.
     if (rate > 0 && cappedMs > 60_000) {
@@ -662,10 +681,13 @@ function ActiveClock({
 
   const elapsedMs = Math.max(0, now - clockedInAt);
   const cappedMs = Math.min(elapsedMs, FOURTEEN_HRS_MS);
-  const earnings = (cappedMs / 3_600_000) * hourly;
+  const cappedHours = cappedMs / 3_600_000;
+  const earningsBreakdown = computeEarnings(cappedHours, hourly);
+  const earnings = earningsBreakdown.total;
   const hours = Math.floor(cappedMs / 3_600_000);
   const minutes = Math.floor((cappedMs % 3_600_000) / 60_000);
   const seconds = Math.floor((cappedMs % 60_000) / 1000);
+  const pastEight = elapsedMs >= EIGHT_HRS_MS;
   const pastTen = elapsedMs >= TEN_HRS_MS;
   const pastFourteen = elapsedMs >= FOURTEEN_HRS_MS;
 
@@ -680,7 +702,7 @@ function ActiveClock({
       }}
     >
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
@@ -688,6 +710,19 @@ function ActiveClock({
           <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-emerald-300">
             On the clock
           </span>
+          {pastEight && (
+            <span
+              className="text-[10px] uppercase tracking-[0.3em] font-extrabold px-2 py-0.5 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, rgb(244 114 182 / 0.4), rgb(245 158 11 / 0.4))",
+                border: "1px solid rgb(244 114 182 / 0.6)",
+                color: "rgb(252 231 243)",
+                boxShadow: "0 0 18px rgb(244 114 182 / 0.5)",
+              }}
+            >
+              ⚡ OT · 1.5×
+            </span>
+          )}
         </div>
         <div
           className="text-[11px] tabular"
@@ -727,8 +762,25 @@ function ActiveClock({
       </div>
 
       <div className="grid grid-cols-3 gap-3 mt-5">
-        <Stat label="Elapsed" value={`${hours}h ${String(minutes).padStart(2, "0")}m`} sub={`${String(seconds).padStart(2, "0")}s`} />
-        <Stat label="Rate" value={`$${hourly.toFixed(2)}`} sub="per hour" />
+        <Stat
+          label="Elapsed"
+          value={`${hours}h ${String(minutes).padStart(2, "0")}m`}
+          sub={`${String(seconds).padStart(2, "0")}s`}
+        />
+        <Stat
+          label={pastEight ? "Pay split" : "Rate"}
+          value={
+            pastEight
+              ? `$${earningsBreakdown.regular.toFixed(0)} · $${earningsBreakdown.overtime.toFixed(0)}`
+              : `$${hourly.toFixed(2)}`
+          }
+          sub={
+            pastEight
+              ? `${earningsBreakdown.regularHours.toFixed(1)}h base + ${earningsBreakdown.overtimeHours.toFixed(1)}h OT`
+              : `straight-time · OT @ 8h`
+          }
+          tone={pastEight ? "amber" : "slate"}
+        />
         <Stat
           label="Next cap"
           value={pastFourteen ? "14 h ✓" : pastTen ? "14h limit" : "10h soft"}
@@ -918,6 +970,11 @@ function ShiftHistory({ userId }: { userId: string }) {
 function ShiftRow({ shift }: { shift: ShiftRow }) {
   const start = new Date(shift.started_at);
   const end = new Date(shift.ended_at);
+  const breakdown = computeEarnings(
+    Number(shift.hours_worked) || 0,
+    Number(shift.hourly_rate_used) || 0,
+  );
+  const hasOt = breakdown.overtimeHours > 0;
   return (
     <li
       className="rounded-lg px-3 py-2 flex items-center gap-3 text-[12px]"
@@ -939,6 +996,11 @@ function ShiftRow({ shift }: { shift: ShiftRow }) {
           {start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
           {" → "}
           {end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          {hasOt && (
+            <span className="ml-1.5 text-[10px] font-bold text-fuchsia-300">
+              ⚡ {breakdown.overtimeHours.toFixed(1)}h OT
+            </span>
+          )}
           {shift.was_auto_punched && (
             <span className="ml-1.5 text-[10px] text-rose-300/80">
               · auto-out
@@ -946,17 +1008,13 @@ function ShiftRow({ shift }: { shift: ShiftRow }) {
           )}
         </div>
         <div className="text-[10px] tabular" style={{ color: "rgb(var(--fg-faint))" }}>
-          {shift.bid_job_num
-            ? `${shift.bid_job_num} · `
-            : ""}
-          {shift.hours_worked.toFixed(2)} hrs · ${shift.hourly_rate_used.toFixed(
-            2,
-          )}
-          /hr
+          {shift.bid_job_num ? `${shift.bid_job_num} · ` : ""}
+          {Number(shift.hours_worked).toFixed(2)} hrs · $
+          {Number(shift.hourly_rate_used).toFixed(2)}/hr
         </div>
       </div>
       <div className="font-bold tabular text-amber-300">
-        ${shift.earnings.toFixed(2)}
+        ${Number(shift.earnings).toFixed(2)}
       </div>
     </li>
   );
