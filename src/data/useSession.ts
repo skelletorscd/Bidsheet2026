@@ -8,9 +8,10 @@ export type Profile = {
   photo_url: string | null;
   is_admin: boolean;
   claimed_driver_rank: number | null;
+  // Sensitive fields — sourced from the private driver_payclock table.
   hourly_rate: number | null;
   mileage_rate: number | null;
-  clocked_in_at: string | null; // ISO timestamp
+  clocked_in_at: string | null;
   alerts_enabled: boolean;
 };
 
@@ -26,50 +27,87 @@ export type SessionState = {
   refreshProfile: () => Promise<void>;
 };
 
-// Defaults for any column that might not exist yet (older schema deploys).
-function withDefaults(raw: Partial<Profile> | null): Profile | null {
-  if (!raw) return null;
-  return {
-    id: raw.id ?? "",
-    display_name: raw.display_name ?? null,
-    photo_url: raw.photo_url ?? null,
-    is_admin: raw.is_admin ?? false,
-    claimed_driver_rank: raw.claimed_driver_rank ?? null,
-    hourly_rate: raw.hourly_rate ?? null,
-    mileage_rate: raw.mileage_rate ?? null,
-    clocked_in_at: raw.clocked_in_at ?? null,
-    alerts_enabled: raw.alerts_enabled ?? false,
-  };
-}
+type ProfilePublic = {
+  id: string;
+  display_name: string | null;
+  photo_url: string | null;
+  is_admin: boolean;
+  claimed_driver_rank: number | null;
+};
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
+type PayClock = {
+  hourly_rate: number | null;
+  mileage_rate: number | null;
+  clocked_in_at: string | null;
+  alerts_enabled: boolean;
+};
+
+async function fetchProfilePublic(userId: string): Promise<ProfilePublic | null> {
   const sb = getSupabase();
   if (!sb) return null;
-  // Try the full column set first.
-  const FULL =
-    "id, display_name, photo_url, is_admin, claimed_driver_rank, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled";
-  let { data, error } = await sb
+  const { data, error } = await sb
     .from("profiles")
-    .select(FULL)
+    .select("id, display_name, photo_url, is_admin, claimed_driver_rank")
     .eq("id", userId)
     .maybeSingle();
-  // PostgREST returns 42703 when a column is missing — happens when the
-  // SQL migration in supabase/schema.sql hasn't been re-run yet. Fall
-  // back to the original column set so the rest of the app keeps working.
-  if (error && (error as { code?: string }).code === "42703") {
-    const ORIGINAL =
-      "id, display_name, photo_url, is_admin, claimed_driver_rank";
-    ({ data, error } = await sb
-      .from("profiles")
-      .select(ORIGINAL)
-      .eq("id", userId)
-      .maybeSingle());
-  }
   if (error) {
     console.error("profile load error", error);
     return null;
   }
-  return withDefaults(data as Partial<Profile> | null);
+  return data as ProfilePublic | null;
+}
+
+async function fetchPayClock(userId: string): Promise<PayClock> {
+  const sb = getSupabase();
+  if (!sb) return EMPTY_PAYCLOCK;
+  const { data, error } = await sb
+    .from("driver_payclock")
+    .select("hourly_rate, mileage_rate, clocked_in_at, alerts_enabled")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    // Fail soft: table may not exist yet (pre-migration), or no row yet.
+    if (
+      (error as { code?: string }).code !== "42P01" &&
+      !/(does not exist|PGRST205)/i.test((error as { message?: string }).message ?? "")
+    ) {
+      console.error("payclock load error", error);
+    }
+    return EMPTY_PAYCLOCK;
+  }
+  if (!data) return EMPTY_PAYCLOCK;
+  return {
+    hourly_rate: data.hourly_rate ?? null,
+    mileage_rate: data.mileage_rate ?? null,
+    clocked_in_at: data.clocked_in_at ?? null,
+    alerts_enabled: data.alerts_enabled ?? false,
+  };
+}
+
+const EMPTY_PAYCLOCK: PayClock = {
+  hourly_rate: null,
+  mileage_rate: null,
+  clocked_in_at: null,
+  alerts_enabled: false,
+};
+
+async function fetchProfile(userId: string): Promise<Profile | null> {
+  const [pub, payclock] = await Promise.all([
+    fetchProfilePublic(userId),
+    fetchPayClock(userId),
+  ]);
+  if (!pub) return null;
+  return {
+    id: pub.id,
+    display_name: pub.display_name,
+    photo_url: pub.photo_url,
+    is_admin: pub.is_admin,
+    claimed_driver_rank: pub.claimed_driver_rank,
+    hourly_rate: payclock.hourly_rate,
+    mileage_rate: payclock.mileage_rate,
+    clocked_in_at: payclock.clocked_in_at,
+    alerts_enabled: payclock.alerts_enabled,
+  };
 }
 
 export function useSession(): SessionState {
@@ -111,8 +149,8 @@ export function useSession(): SessionState {
     };
   }, []);
 
-  // Fetch profile on user change AND subscribe to profile updates so an
-  // admin flip (or photo change from another tab) propagates immediately.
+  // Fetch profile on user change AND subscribe to BOTH tables so the
+  // signed-in driver sees their own data update live.
   useEffect(() => {
     const sb = getSupabase();
     if (!sb || !user) {
@@ -125,12 +163,13 @@ export function useSession(): SessionState {
       if (active) setProfile(p);
     })();
 
-    // Unique channel name per mount — Supabase reuses channel instances
-    // by name, and re-using a name after subscribe() throws on the next
-    // .on() call (which React StrictMode triggers in dev).
-    const channelKey = `profile:${user.id}:${Math.random().toString(36).slice(2, 10)}`;
-    const channel = sb
-      .channel(channelKey)
+    const refresh = async () => {
+      const p = await fetchProfile(user.id);
+      if (active) setProfile(p);
+    };
+
+    const profileChannel = sb
+      .channel(`profile:${user.id}:${Math.random().toString(36).slice(2, 10)}`)
       .on(
         "postgres_changes",
         {
@@ -139,16 +178,28 @@ export function useSession(): SessionState {
           table: "profiles",
           filter: `id=eq.${user.id}`,
         },
-        async () => {
-          const p = await fetchProfile(user.id);
-          if (active) setProfile(p);
+        () => refresh(),
+      )
+      .subscribe();
+
+    const payclockChannel = sb
+      .channel(`payclock:${user.id}:${Math.random().toString(36).slice(2, 10)}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "driver_payclock",
+          filter: `user_id=eq.${user.id}`,
         },
+        () => refresh(),
       )
       .subscribe();
 
     return () => {
       active = false;
-      sb.removeChannel(channel);
+      sb.removeChannel(profileChannel);
+      sb.removeChannel(payclockChannel);
     };
   }, [user]);
 
@@ -169,6 +220,5 @@ export async function signOut(): Promise<void> {
 }
 
 export function clearRecoveryModeFlag(): void {
-  // Intentional no-op — the flag lives inside the hook state; components
-  // trigger their own re-render to exit the flow (App.tsx handles this).
+  // Intentional no-op — kept for callers that may have referenced it.
 }

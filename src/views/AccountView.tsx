@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  CalendarRange,
   Camera,
   Check,
+  DollarSign,
   Loader2,
   LogOut,
   Save,
@@ -277,6 +279,9 @@ function SignedIn({
           </div>
         </section>
 
+        {/* Weekly earnings card */}
+        <WeeklyEarnings userId={userId} />
+
         {/* Claim section */}
         <ClaimSection
           userId={userId}
@@ -288,6 +293,123 @@ function SignedIn({
         {profile?.is_admin && <AdminPanel />}
       </div>
     </div>
+  );
+}
+
+// ─── Weekly earnings card (Account page) ───────────────────────────────
+
+function WeeklyEarnings({ userId }: { userId: string }) {
+  type Row = {
+    started_at: string;
+    hours_worked: number;
+    earnings: number;
+  };
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [missing, setMissing] = useState(false);
+
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb) return;
+    let active = true;
+    (async () => {
+      const sundayLocal = new Date();
+      sundayLocal.setDate(sundayLocal.getDate() - sundayLocal.getDay());
+      sundayLocal.setHours(0, 0, 0, 0);
+      const { data, error } = await sb
+        .from("shift_history")
+        .select("started_at, hours_worked, earnings")
+        .eq("user_id", userId)
+        .gte("started_at", sundayLocal.toISOString())
+        .order("started_at", { ascending: false });
+      if (!active) return;
+      if (error) {
+        if (/(42P01|PGRST205|does not exist)/i.test(error.message ?? "")) {
+          setMissing(true);
+        }
+        setRows([]);
+        return;
+      }
+      setRows(data as Row[]);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  if (rows == null) return null;
+
+  const totalHours = rows.reduce(
+    (sum, r) => sum + (Number(r.hours_worked) || 0),
+    0,
+  );
+  const totalEarnings = rows.reduce(
+    (sum, r) => sum + (Number(r.earnings) || 0),
+    0,
+  );
+
+  return (
+    <section className="card-strong p-5 relative overflow-hidden">
+      <div
+        className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-30 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(245,158,11,0.55), transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.3em] font-bold flex items-center gap-1.5"
+            style={{ color: "rgb(var(--fg-faint))" }}
+          >
+            <CalendarRange className="w-3 h-3 text-amber-300" />
+            This week
+          </div>
+          <div
+            className="mt-2 font-mono font-extrabold tabular tracking-tight"
+            style={{
+              fontSize: "clamp(36px, 8vw, 56px)",
+              color: "transparent",
+              backgroundImage:
+                "linear-gradient(180deg, rgb(252 211 77), rgb(245 158 11) 60%, rgb(217 119 6))",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 4px 18px rgb(245 158 11 / 0.35))",
+              lineHeight: 1,
+            }}
+          >
+            ${totalEarnings.toFixed(2)}
+          </div>
+          <div
+            className="text-[12px] mt-1.5"
+            style={{ color: "rgb(var(--fg-subtle))" }}
+          >
+            {rows.length} shift{rows.length === 1 ? "" : "s"} ·{" "}
+            {totalHours.toFixed(2)} hrs
+          </div>
+        </div>
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgb(245 158 11 / 0.3), rgb(244 114 182 / 0.25))",
+            border: "1px solid rgb(245 158 11 / 0.5)",
+          }}
+        >
+          <DollarSign className="w-5 h-5 text-amber-300" />
+        </div>
+      </div>
+      {missing && (
+        <p
+          className="mt-3 text-[11px] italic"
+          style={{ color: "rgb(var(--fg-faint))" }}
+        >
+          Shift-history table isn't installed yet — re-run schema.sql in
+          Supabase to start tracking weekly totals.
+        </p>
+      )}
+    </section>
   );
 }
 

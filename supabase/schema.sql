@@ -29,6 +29,8 @@ create table if not exists public.profiles (
 );
 
 -- Backfill for existing profiles (safe to re-run).
+-- These columns may exist if you ran an earlier version of this schema;
+-- they get dropped after the data is moved into driver_payclock below.
 alter table public.profiles
   add column if not exists hourly_rate numeric(6, 2);
 alter table public.profiles
@@ -37,6 +39,53 @@ alter table public.profiles
   add column if not exists clocked_in_at timestamptz;
 alter table public.profiles
   add column if not exists alerts_enabled boolean not null default false;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 1b. driver_payclock  ── PRIVATE per-user pay/clock state.
+--     Lives in its own table because public.profiles is readable by every
+--     authenticated user (so coworkers can see names/photos), and we
+--     don't want hourly rates or punch-in timestamps exposed.
+-- ─────────────────────────────────────────────────────────────────────────
+create table if not exists public.driver_payclock (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  hourly_rate numeric(6, 2),
+  mileage_rate numeric(6, 3),
+  clocked_in_at timestamptz,
+  alerts_enabled boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists driver_payclock_updated_at on public.driver_payclock;
+create trigger driver_payclock_updated_at before update on public.driver_payclock
+  for each row execute function public.touch_updated_at();
+
+-- One-time data migration from the old profile columns. Idempotent: if
+-- rows already exist in driver_payclock the COPY is skipped.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'hourly_rate'
+  ) then
+    insert into public.driver_payclock (
+      user_id, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled
+    )
+    select id, hourly_rate, mileage_rate, clocked_in_at, alerts_enabled
+      from public.profiles
+     where hourly_rate is not null
+        or mileage_rate is not null
+        or clocked_in_at is not null
+        or alerts_enabled is true
+    on conflict (user_id) do nothing;
+  end if;
+end $$;
+
+-- Now drop the columns off profiles so they can never be read by another
+-- user via the public RLS policy.
+alter table public.profiles drop column if exists hourly_rate;
+alter table public.profiles drop column if exists mileage_rate;
+alter table public.profiles drop column if exists clocked_in_at;
+alter table public.profiles drop column if exists alerts_enabled;
 
 create index if not exists profiles_claimed_driver_rank_idx
   on public.profiles (claimed_driver_rank);
@@ -173,6 +222,24 @@ alter table public.name_claims enable row level security;
 alter table public.driver_status enable row level security;
 alter table public.driver_status_events enable row level security;
 alter table public.shift_history enable row level security;
+alter table public.driver_payclock enable row level security;
+
+-- driver_payclock: only the owner can read/write; admins can read all.
+drop policy if exists "payclock self read" on public.driver_payclock;
+create policy "payclock self read" on public.driver_payclock
+  for select using (auth.uid() = user_id or public.is_admin(auth.uid()));
+
+drop policy if exists "payclock self upsert" on public.driver_payclock;
+create policy "payclock self upsert" on public.driver_payclock
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "payclock self update" on public.driver_payclock;
+create policy "payclock self update" on public.driver_payclock
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "payclock self delete" on public.driver_payclock;
+create policy "payclock self delete" on public.driver_payclock
+  for delete using (auth.uid() = user_id);
 
 -- profiles: everyone can read (coworkers need to see names + photos);
 -- only the owner can update their own profile; admins can update anyone.
@@ -331,6 +398,9 @@ begin
     exception when duplicate_object then null; end;
     begin
       alter publication supabase_realtime add table public.shift_history;
+    exception when duplicate_object then null; end;
+    begin
+      alter publication supabase_realtime add table public.driver_payclock;
     exception when duplicate_object then null; end;
   end if;
 end $$;

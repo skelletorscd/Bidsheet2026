@@ -185,21 +185,28 @@ function Clocked({
       return "Database isn't fully migrated yet — Samuel needs to re-run the latest schema in Supabase.";
     }
     if (err.code === "PGRST204" || (err.message ?? "").includes("Could not find")) {
-      return "Shift-history table is missing — re-run supabase/schema.sql so it gets created.";
+      return "Required table is missing — re-run supabase/schema.sql so it gets created.";
+    }
+    if (err.code === "42P01" || (err.message ?? "").includes("relation")) {
+      return "Required table is missing — re-run supabase/schema.sql so it gets created.";
     }
     return err.message ?? "Something went wrong.";
   };
 
-  const clockIn = async (atTs?: number) => {
+  const upsertPayclock = async (patch: Record<string, unknown>) => {
     const sb = getSupabase();
-    if (!sb) return;
+    if (!sb) throw new Error("Not connected");
+    const { error: err } = await sb
+      .from("driver_payclock")
+      .upsert({ user_id: userId, ...patch }, { onConflict: "user_id" });
+    return err;
+  };
+
+  const clockIn = async (atTs?: number) => {
     setBusy("in");
     setError(null);
     const iso = atTs ? new Date(atTs).toISOString() : new Date().toISOString();
-    const { error: err } = await sb
-      .from("profiles")
-      .update({ clocked_in_at: iso })
-      .eq("id", userId);
+    const err = await upsertPayclock({ clocked_in_at: iso });
     if (err) {
       setBusy(null);
       setError(friendlyError(err));
@@ -221,7 +228,8 @@ function Clocked({
     const rate = hourly ?? 0;
     const { total: earnings } = computeEarnings(hoursWorked, rate);
 
-    // Log the shift first so we don't lose it if the profile update fails.
+    // Log the shift first so we don't lose it if the payclock update fails.
+    let histTableMissing = false;
     if (rate > 0 && cappedMs > 60_000) {
       const { error: histErr } = await sb.from("shift_history").insert({
         user_id: userId,
@@ -236,17 +244,20 @@ function Clocked({
         was_auto_punched: autoPunched,
       });
       if (histErr) {
-        // Swallow the missing-table error so the user can still clock out.
-        if (!/(42P01|PGRST205|does not exist)/i.test(histErr.message ?? "")) {
+        if (/(42P01|PGRST205|does not exist)/i.test(histErr.message ?? "")) {
+          histTableMissing = true;
+        } else {
           console.error("shift insert", histErr);
+          setBusy(null);
+          setError(
+            "Couldn't save this shift to history: " + friendlyError(histErr),
+          );
+          return;
         }
       }
     }
 
-    const { error: profErr } = await sb
-      .from("profiles")
-      .update({ clocked_in_at: null })
-      .eq("id", userId);
+    const profErr = await upsertPayclock({ clocked_in_at: null });
     if (profErr) {
       setBusy(null);
       setError(friendlyError(profErr));
@@ -254,11 +265,14 @@ function Clocked({
     }
     await refreshProfile();
     setBusy(null);
+    if (histTableMissing) {
+      setError(
+        "Shift was clocked out but couldn't be saved for the week — the shift_history table doesn't exist in Supabase yet. Have Samuel re-run the latest schema.sql.",
+      );
+    }
   };
 
   const saveRates = async () => {
-    const sb = getSupabase();
-    if (!sb) return;
     const n = Number(hourlyDraft);
     if (!Number.isFinite(n) || n < 0 || n > 999) {
       setError("Hourly rate must be a number between 0 and 999.");
@@ -266,10 +280,7 @@ function Clocked({
     }
     setBusy("rates");
     setError(null);
-    const { error: err } = await sb
-      .from("profiles")
-      .update({ hourly_rate: n })
-      .eq("id", userId);
+    const err = await upsertPayclock({ hourly_rate: n });
     if (err) {
       setBusy(null);
       setError(friendlyError(err));
@@ -280,8 +291,6 @@ function Clocked({
   };
 
   const toggleAlerts = async () => {
-    const sb = getSupabase();
-    if (!sb) return;
     setBusy("alerts");
     setError(null);
     const next = !alertsOn;
@@ -292,10 +301,7 @@ function Clocked({
         // ignore
       }
     }
-    const { error: err } = await sb
-      .from("profiles")
-      .update({ alerts_enabled: next })
-      .eq("id", userId);
+    const err = await upsertPayclock({ alerts_enabled: next });
     if (err) {
       setBusy(null);
       setError(friendlyError(err));
