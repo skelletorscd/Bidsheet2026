@@ -11,6 +11,7 @@ import { ContactView } from "./views/ContactView";
 import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
 import { OnCallHubView } from "./views/OnCallHubView";
+import { RoutesView } from "./views/RoutesView";
 import { AccountView } from "./views/AccountView";
 import { ClockView } from "./views/ClockView";
 import { AuthModal } from "./components/AuthModal";
@@ -139,6 +140,9 @@ export default function App() {
         )}
         {tab.kind === "seniority" && (
           <RosterView key={childKey} onStatus={reportStatus} />
+        )}
+        {tab.kind === "routes" && (
+          <RoutesView key={childKey} onStatus={reportStatus} />
         )}
         {tab.kind === "onCallHub" && (
           <OnCallHubView key={childKey} tab={tab} onStatus={reportStatus} />
