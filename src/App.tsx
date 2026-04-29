@@ -12,6 +12,7 @@ import { DashboardView } from "./views/DashboardView";
 import { RosterView } from "./views/RosterView";
 import { OnCallHubView } from "./views/OnCallHubView";
 import { RoutesView } from "./views/RoutesView";
+import { WeatherView } from "./views/WeatherView";
 import { AccountView } from "./views/AccountView";
 import { ClockView } from "./views/ClockView";
 import { AuthModal } from "./components/AuthModal";
@@ -149,6 +150,9 @@ export default function App() {
         )}
         {tab.kind === "locations" && (
           <LocationsView key={childKey} onStatus={reportStatus} />
+        )}
+        {tab.kind === "weather" && (
+          <WeatherView key={childKey} onStatus={reportStatus} />
         )}
         {tab.kind === "contact" && (
           <ContactView key={childKey} onStatus={reportStatus} />

@@ -1,6 +1,7 @@
 import { NavLink, useSearchParams } from "react-router-dom";
 import { TAB_SOURCES, TabKey } from "../data/sources";
 import {
+  Cloud,
   DollarSign,
   Home,
   ListOrdered,
@@ -20,6 +21,7 @@ const ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   onCallToledo: Phone,
   onCallNbl: Phone,
   locations: MapPin,
+  weather: Cloud,
   contact: Mail,
 };
 

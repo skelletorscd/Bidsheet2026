@@ -7,6 +7,7 @@ export type TabKey =
   | "onCallToledo"
   | "onCallNbl"
   | "locations"
+  | "weather"
   | "contact";
 
 export type TabSource = {
@@ -23,6 +24,7 @@ export type TabSource = {
     | "routes"
     | "onCallHub"
     | "locations"
+    | "weather"
     | "contact";
 };
 
@@ -60,6 +62,14 @@ export const TAB_SOURCES: TabSource[] = [
     hub: null,
     gid: null,
     kind: "locations",
+  },
+  {
+    key: "weather",
+    label: "Weather",
+    shortLabel: "Weather",
+    hub: null,
+    gid: null,
+    kind: "weather",
   },
   {
     key: "onCallToledo",
