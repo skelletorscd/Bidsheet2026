@@ -22,6 +22,7 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 import { ROSTER, ALL_BIDS, SnapshotBid } from "../data/roster";
 import { namesMatch, normalizeName } from "../parse/names";
 import { useRouteDraft } from "../data/useRouteDraft";
+import { RouteWeatherStrip } from "../components/RouteWeatherStrip";
 
 type Props = {
   onStatus: (s: {
@@ -518,6 +519,8 @@ function BidAssignmentSection({
               </button>
             </div>
           </div>
+
+          {pickedBid && <RouteWeatherStrip bid={pickedBid} />}
 
           {pendingRequest && (
             <div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/40 p-3 flex items-start gap-2">
