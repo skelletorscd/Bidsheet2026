@@ -9,7 +9,7 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Pause, Play } from "lucide-react";
+import { Eye, EyeOff, Pause, Play } from "lucide-react";
 import {
   RadarFrame,
   WeatherForecast,
@@ -39,6 +39,7 @@ type Props = {
  * can see precipitation moving across the whole trip at once.
  */
 export function RouteWeatherMap({ stops, radarFrames }: Props) {
+  const [showStops, setShowStops] = useState(true);
   const valid = stops.filter(
     (s) => Number.isFinite(s.lat) && Number.isFinite(s.lng),
   );
@@ -66,9 +67,13 @@ export function RouteWeatherMap({ stops, radarFrames }: Props) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <RadarLayer frames={radarFrames} />
+        <RadarLayer
+          frames={radarFrames}
+          showStops={showStops}
+          onToggleStops={() => setShowStops((v) => !v)}
+        />
         <FitBounds points={path} />
-        {valid.length >= 2 && (
+        {showStops && valid.length >= 2 && (
           <Polyline
             positions={path}
             pathOptions={{
@@ -79,33 +84,34 @@ export function RouteWeatherMap({ stops, radarFrames }: Props) {
             }}
           />
         )}
-        {valid.map((s, i) => (
-          <Marker
-            key={s.code}
-            position={[s.lat, s.lng]}
-            icon={stopIcon(s, i === 0, i === valid.length - 1)}
-          >
-            <Popup>
-              <div className="text-xs leading-snug">
-                <div className="font-mono font-bold text-slate-900">
-                  {s.code} · {s.city}
-                  {s.state ? `, ${s.state}` : ""}
-                </div>
-                {s.forecast ? (
-                  <div className="mt-1 text-slate-700">
-                    {Math.round(s.forecast.current.tempF)}° ·{" "}
-                    {weatherInfo(
-                      s.forecast.current.weatherCode,
-                      s.forecast.current.isDay,
-                    ).label}
+        {showStops &&
+          valid.map((s, i) => (
+            <Marker
+              key={s.code}
+              position={[s.lat, s.lng]}
+              icon={stopIcon(s, i === 0, i === valid.length - 1)}
+            >
+              <Popup>
+                <div className="text-xs leading-snug">
+                  <div className="font-mono font-bold text-slate-900">
+                    {s.code} · {s.city}
+                    {s.state ? `, ${s.state}` : ""}
                   </div>
-                ) : (
-                  <div className="text-slate-500 mt-1">Weather loading…</div>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+                  {s.forecast ? (
+                    <div className="mt-1 text-slate-700">
+                      {Math.round(s.forecast.current.tempF)}° ·{" "}
+                      {weatherInfo(
+                        s.forecast.current.weatherCode,
+                        s.forecast.current.isDay,
+                      ).label}
+                    </div>
+                  ) : (
+                    <div className="text-slate-500 mt-1">Weather loading…</div>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
       </MapContainer>
     </div>
   );
@@ -154,7 +160,15 @@ function stopIcon(_stop: WeatherStop, isFirst: boolean, isLast: boolean): L.DivI
 
 // Reuses the radar layer pattern from WeatherMap but inlined here so this
 // component is self-contained.
-function RadarLayer({ frames }: { frames: RadarFrame[] }) {
+function RadarLayer({
+  frames,
+  showStops,
+  onToggleStops,
+}: {
+  frames: RadarFrame[];
+  showStops: boolean;
+  onToggleStops: () => void;
+}) {
   const [idx, setIdx] = useState(Math.max(0, frames.length - 1));
   const [playing, setPlaying] = useState(true);
   const timerRef = useRef<number | null>(null);
@@ -223,6 +237,27 @@ function RadarLayer({ frames }: { frames: RadarFrame[] }) {
               <span className="ml-1 text-amber-300 font-bold">forecast</span>
             )}
           </span>
+          <span
+            aria-hidden
+            style={{
+              width: 1,
+              height: 10,
+              background: "rgb(255 255 255 / 0.15)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={onToggleStops}
+            className="hover:text-amber-300"
+            aria-label={showStops ? "Hide stop markers" : "Show stop markers"}
+            title={showStops ? "Hide stops" : "Show stops"}
+          >
+            {showStops ? (
+              <Eye className="w-3 h-3" />
+            ) : (
+              <EyeOff className="w-3 h-3" />
+            )}
+          </button>
         </div>
       </div>
     </>

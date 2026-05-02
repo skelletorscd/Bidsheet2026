@@ -8,7 +8,7 @@ import {
   TileLayer,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Pause, Play } from "lucide-react";
+import { Eye, EyeOff, Pause, Play } from "lucide-react";
 import { RadarFrame, WeatherAlert, radarTileUrl } from "../data/weather";
 
 type Props = {
@@ -23,6 +23,7 @@ type Props = {
 };
 
 export function WeatherMap({ hubs, radarFrames, alerts }: Props) {
+  const [showHubs, setShowHubs] = useState(true);
   const center = useMemo<[number, number]>(() => {
     if (hubs.length === 0) return [41.5, -83.7];
     const avgLat =
@@ -45,7 +46,11 @@ export function WeatherMap({ hubs, radarFrames, alerts }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <RadarLayer frames={radarFrames} />
+        <RadarLayer
+          frames={radarFrames}
+          showHubs={showHubs}
+          onToggleHubs={() => setShowHubs((v) => !v)}
+        />
 
         {alerts.map((a) =>
           a.geometry ? (
@@ -68,13 +73,14 @@ export function WeatherMap({ hubs, radarFrames, alerts }: Props) {
           ) : null,
         )}
 
-        {hubs.map((h) => (
-          <Marker
-            key={h.code}
-            position={[h.lat, h.lng]}
-            icon={hubIcon(h.code)}
-          />
-        ))}
+        {showHubs &&
+          hubs.map((h) => (
+            <Marker
+              key={h.code}
+              position={[h.lat, h.lng]}
+              icon={hubIcon(h.code)}
+            />
+          ))}
       </MapContainer>
     </div>
   );
@@ -104,7 +110,15 @@ function hubIcon(_label: string): L.DivIcon {
 
 // ─── Radar layer with simple play/pause control ──────────────────────
 
-function RadarLayer({ frames }: { frames: RadarFrame[] }) {
+function RadarLayer({
+  frames,
+  showHubs,
+  onToggleHubs,
+}: {
+  frames: RadarFrame[];
+  showHubs: boolean;
+  onToggleHubs: () => void;
+}) {
   const [idx, setIdx] = useState(Math.max(0, frames.length - 1));
   const [playing, setPlaying] = useState(true);
   const timerRef = useRef<number | null>(null);
@@ -177,6 +191,27 @@ function RadarLayer({ frames }: { frames: RadarFrame[] }) {
               <span className="ml-1 text-amber-300 font-bold">forecast</span>
             )}
           </span>
+          <span
+            aria-hidden
+            style={{
+              width: 1,
+              height: 12,
+              background: "rgb(255 255 255 / 0.15)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={onToggleHubs}
+            className="hover:text-amber-300"
+            aria-label={showHubs ? "Hide hub markers" : "Show hub markers"}
+            title={showHubs ? "Hide hubs" : "Show hubs"}
+          >
+            {showHubs ? (
+              <Eye className="w-3.5 h-3.5" />
+            ) : (
+              <EyeOff className="w-3.5 h-3.5" />
+            )}
+          </button>
         </div>
       </div>
     </>
