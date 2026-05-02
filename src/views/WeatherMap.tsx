@@ -107,12 +107,13 @@ function hubIcon(label: string): L.DivIcon {
 // ─── Radar layer with simple play/pause control ──────────────────────
 
 function RadarLayer({ frames }: { frames: RadarFrame[] }) {
-  const [idx, setIdx] = useState(frames.length - 1);
+  const [idx, setIdx] = useState(Math.max(0, frames.length - 1));
   const [playing, setPlaying] = useState(true);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setIdx(frames.length - 1);
+    if (frames.length === 0) return;
+    setIdx(Math.max(0, frames.length - 1));
   }, [frames.length]);
 
   useEffect(() => {
@@ -126,7 +127,11 @@ function RadarLayer({ frames }: { frames: RadarFrame[] }) {
   }, [playing, frames.length]);
 
   if (frames.length === 0) return null;
-  const frame = frames[idx];
+  // Guard against the brief render where state still holds an out-of-bounds
+  // index (initial mount, or after frames shrinks).
+  const safeIdx = Math.min(Math.max(0, idx), frames.length - 1);
+  const frame = frames[safeIdx];
+  if (!frame) return null;
   const isFuture =
     Math.floor(Date.now() / 1000) - frame.time < -60;
 
