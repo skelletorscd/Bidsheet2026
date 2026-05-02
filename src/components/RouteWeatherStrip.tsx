@@ -1,14 +1,22 @@
-import { useEffect, useState } from "react";
-import { AlertTriangle, CloudRain, Loader2 } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { AlertTriangle, CloudRain, Loader2, Map } from "lucide-react";
 import {
   fetchAlerts,
+  fetchRadarFrames,
   fetchWeather,
+  RadarFrame,
   WeatherAlert,
   WeatherForecast,
   weatherInfo,
 } from "../data/weather";
 import { DIRECTORY, DirectoryRow } from "../data/directory.generated";
 import { SnapshotBid } from "../data/roster";
+
+// Lazy-load the map so the Leaflet bundle doesn't ship for users who never
+// expand the route weather section.
+const RouteWeatherMap = lazy(() =>
+  import("./RouteWeatherMap").then((m) => ({ default: m.RouteWeatherMap })),
+);
 
 const BY_CODE: Record<string, DirectoryRow> = Object.fromEntries(
   DIRECTORY.map((r) => [r.code, r]),
@@ -33,6 +41,8 @@ type StopForecast = {
 export function RouteWeatherStrip({ bid }: { bid: SnapshotBid }) {
   const [stops, setStops] = useState<StopForecast[] | null>(null);
   const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
+  const [radarFrames, setRadarFrames] = useState<RadarFrame[]>([]);
+  const [showMap, setShowMap] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Build the unique stop list (in route order), keeping only the ones
@@ -78,12 +88,14 @@ export function RouteWeatherStrip({ bid }: { bid: SnapshotBid }) {
             }
           }),
         );
-        const al = await fetchAlerts(ALERT_STATES).catch(
-          () => [] as WeatherAlert[],
-        );
+        const [al, fr] = await Promise.all([
+          fetchAlerts(ALERT_STATES).catch(() => [] as WeatherAlert[]),
+          fetchRadarFrames().catch(() => [] as RadarFrame[]),
+        ]);
         if (!active) return;
         setStops(results);
         setAlerts(al);
+        setRadarFrames(fr);
       } catch (e) {
         if (active) setError((e as Error).message);
       }
@@ -130,6 +142,48 @@ export function RouteWeatherStrip({ bid }: { bid: SnapshotBid }) {
             <StopWeatherCard key={s.code} stop={s} />
           ))}
         </div>
+      )}
+
+      {stops && stops.length >= 2 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setShowMap((v) => !v)}
+            className="btn text-[12px] mt-1"
+          >
+            <Map className="w-3.5 h-3.5" />
+            {showMap
+              ? "Hide route map"
+              : "See radar across my whole route"}
+          </button>
+          {showMap && (
+            <Suspense
+              fallback={
+                <div
+                  className="rounded-xl h-[280px] flex items-center justify-center"
+                  style={{
+                    background: "rgb(var(--bg-raised) / 0.3)",
+                    border: "1px solid rgb(var(--border) / 0.06)",
+                  }}
+                >
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+                </div>
+              }
+            >
+              <RouteWeatherMap
+                stops={stops.map((s) => ({
+                  code: s.code,
+                  city: s.city,
+                  state: s.state,
+                  lat: s.lat,
+                  lng: s.lng,
+                  forecast: s.forecast,
+                }))}
+                radarFrames={radarFrames}
+              />
+            </Suspense>
+          )}
+        </>
       )}
 
       {relevantAlerts.length > 0 && (

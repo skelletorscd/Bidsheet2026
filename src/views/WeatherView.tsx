@@ -125,10 +125,11 @@ export function WeatherView({ onStatus }: Props) {
             className="mt-1 text-sm"
             style={{ color: "rgb(var(--fg-subtle))" }}
           >
-            Animated radar overlays the Toledo / N. Baltimore feeder area.
-            NWS active alerts surface as red boxes — tap one for the full
-            advisory. Free data from Open-Meteo, RainViewer, and National
-            Weather Service · no API keys.
+            See what's coming before you pull out of the yard. Live radar
+            sweeps the whole feeder area, severe-weather warnings drop in
+            on the map (and listed below — tap any one for the full
+            advisory), and the cards underneath give you Toledo and North
+            Baltimore at a glance.
           </p>
         </div>
 
