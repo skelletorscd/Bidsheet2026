@@ -129,40 +129,26 @@ function FitBounds({ points }: { points: [number, number][] }) {
   return null;
 }
 
-function stopIcon(stop: WeatherStop, isFirst: boolean, isLast: boolean): L.DivIcon {
-  const f = stop.forecast?.current;
-  const wi = f ? weatherInfo(f.weatherCode, f.isDay) : null;
-  const tempLabel = f ? `${Math.round(f.tempF)}°` : "—";
-  const emoji = wi?.emoji ?? "·";
-  const accent = isFirst || isLast ? "#fbbf24" : "#f59e0b";
-  const bg = isFirst || isLast ? "rgba(245,158,11,0.95)" : "rgba(15,20,29,0.92)";
-  const fg = isFirst || isLast ? "#0a0b14" : "#fcd34d";
+function stopIcon(_stop: WeatherStop, isFirst: boolean, isLast: boolean): L.DivIcon {
+  // Small dot marker so the radar underneath reads through. Full stop
+  // details (city, weather, temp) live in the cards above the map and in
+  // the popup that opens on tap.
+  const isEnd = isFirst || isLast;
+  const size = isEnd ? 14 : 10;
+  const fill = isEnd ? "#fbbf24" : "#f59e0b";
+  const ring = isEnd ? "#fde68a" : "#fcd34d";
   return L.divIcon({
     className: "",
-    iconSize: [62, 22],
-    iconAnchor: [31, 11],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
     html: `<div style="
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      height: 22px;
-      padding: 0 6px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-weight: 700;
-      font-size: 10px;
-      letter-spacing: 0.04em;
-      color: ${fg};
-      background: ${bg};
-      border: 1.5px solid ${accent};
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
-      white-space: nowrap;
-    ">
-      <span style="font-size:11px">${emoji}</span>
-      <span>${stop.code}</span>
-      <span style="opacity:0.85">${tempLabel}</span>
-    </div>`,
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 9999px;
+      background: ${fill};
+      border: 2px solid ${ring};
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.55), 0 0 12px rgba(245,158,11,0.6);
+    "></div>`,
   });
 }
 

@@ -87,20 +87,18 @@ function severityColor(severity: string): string {
   return "#94a3b8";
 }
 
-function hubIcon(label: string): L.DivIcon {
+function hubIcon(_label: string): L.DivIcon {
+  // Small dot marker — full hub info lives in the forecast cards under
+  // the map, so the marker just anchors the location on the radar.
   return L.divIcon({
     className: "",
-    iconSize: [60, 28],
-    iconAnchor: [30, 14],
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
     html: `<div style="
-      display:flex;align-items:center;justify-content:center;
-      height:28px;padding:0 10px;
-      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-      font-weight:800;font-size:11px;letter-spacing:0.06em;
-      color:#0a0b14;background:#f59e0b;
-      border:2px solid #fbbf24;border-radius:8px;
-      box-shadow:0 4px 16px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.4);
-    ">${label}</div>`,
+      width:16px;height:16px;border-radius:9999px;
+      background:#f59e0b;border:2px solid #fde68a;
+      box-shadow:0 0 0 2px rgba(0,0,0,.55),0 0 14px rgba(245,158,11,.7);
+    "></div>`,
   });
 }
 
